@@ -39,14 +39,20 @@ def capture_screen():
         frame_time = time.time() - start_time
 
         # Capture the screen
-        screenshot = ImageGrab.grab(bbox=(100, 100, 800, 600))  # Adjust the coordinates as needed
-        screenshot.save(os.path.join(output_folder, f"frame_{frame_count:05}.png"))
+        screenshot = ImageGrab.grab(bbox=(600, 280, 1210, 430))  # Adjust the coordinates as needed
+        screenshot.save(os.path.join(output_folder, f"frame_{frame_count:010}.png"))
 
         # Log the current keys for this frame
-        frame_logs[frame_count] = list(current_keys)
+        frame_logs[frame_count] = one_hot_encode_input(current_keys)
 
         frame_count += 1
         time.sleep(max(0, int((1 / 60) - (time.time() - frame_time))))
+
+def one_hot_encode_input(keys):
+    # [<space-bit>, <down-bit>]
+    output = [1 if "Key.space" in keys else 0, 1 if "Key.down" in keys else 0]
+
+    return output
 
 def main():
     # Start the key listener
@@ -64,7 +70,7 @@ def main():
     # Save key logs
     with open(os.path.join(output_folder, "key_logs.txt"), "w") as f:
         for frame, keys in sorted(frame_logs.items()):
-            f.write(f"Frame {frame:05}: {', '.join(keys) if keys else 'No keys'}\n")
+            f.write(f"frame_{frame:010}: {keys}\n")
 
 if __name__ == "__main__":
     main()

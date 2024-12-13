@@ -16,7 +16,7 @@ class VAEEncoder(tf.keras.Model):
         self.conv2 = layers.Conv2D(128, (3, 3), activation='relu', strides=(2, 2), padding='same')  # 128 filters
         self.conv3 = layers.Conv2D(256, (3, 3), activation='relu', strides=(2, 2), padding='same')  # 256 filters
         self.flatten = layers.Flatten()
-        self.fc1 = layers.Dense(512, activation='relu')  # Increased dense layer
+        self.fc1 = layers.Dense(32 * 8 * 256, activation='relu')  # Increased dense layer
         self.mean = layers.Dense(latent_dim)
         self.log_var = layers.Dense(latent_dim)
 
@@ -57,7 +57,6 @@ class VAEDecoder(tf.keras.Model):
         return self.output_layer(x)
 
 
-# Full VAE Model
 class VAE(tf.keras.Model):
     def __init__(self, latent_dim):
         super(VAE, self).__init__()
@@ -70,7 +69,7 @@ class VAE(tf.keras.Model):
 
         # Combine frame and keyboard input
         batch_size = tf.shape(frames)[0]
-        height, width = tf.shape(frames)[1], tf.shape(frames)[2]
+        height, width, channels = tf.shape(frames)[1], tf.shape(frames)[2], tf.shape(frames)[3]
         num_keyboard_features = tf.shape(keyboard_inputs)[1]
 
         keyboard_inputs = tf.reshape(keyboard_inputs, [batch_size, 1, 1, num_keyboard_features])
@@ -88,21 +87,23 @@ class VAE(tf.keras.Model):
 
 
 def vae_loss(original, reconstructed, mean, log_var):
-    # Ensure original and reconstructed tensors are 4D (batch, height, width, channels)
-    original = tf.expand_dims(original, axis=0) if len(original.shape) == 3 else original
-    reconstructed = tf.expand_dims(reconstructed, axis=0) if len(reconstructed.shape) == 3 else reconstructed
+    # Ensure original and reconstructed have 4 dimensions (batch_size, height, width, channels)
+    if len(original.shape) < 4:
+        original = tf.expand_dims(original, axis=-1)
+    if len(reconstructed.shape) < 4:
+        reconstructed = tf.expand_dims(reconstructed, axis=-1)
 
-    # Reconstruction loss (pixel-wise mean squared error)
-    reconstruction_loss = tf.reduce_mean(tf.reduce_sum(tf.square(original - reconstructed), axis=(1, 2, 3)))
+    # Reconstruction loss
+    reconstruction_loss = tf.reduce_mean(tf.reduce_sum(tf.square(original - reconstructed), axis=[1, 2, 3]))
 
     # KL divergence loss
-    kl_loss = -0.5 * tf.reduce_mean(tf.reduce_sum(1 + log_var - tf.square(mean) - tf.exp(log_var), axis=1))
+    kl_loss = -0.5 * tf.reduce_mean(1 + log_var - tf.square(mean) - tf.exp(log_var))
 
     # Combine the losses with a balancing coefficient
-    kl_weight = 0.05  # Adjust this weight as needed
+    kl_weight = 0.1  # Adjust this weight as needed
     total_loss = reconstruction_loss + kl_weight * kl_loss
-
     return total_loss
+
 
 
 
@@ -131,31 +132,28 @@ def load_data(image_folder, input_file):
 
     return np.array(images), np.array(inputs)
 
-def plot_reconstruction(frames, inputs):
-    # Evaluate the reconstruction on sample images
+# Fix the reconstruction plotting
+def plot_reconstruction(frames, inputs, vae):
     sample_indices = np.random.choice(len(frames), size=10, replace=False)
     sample_frames = frames[sample_indices]
     sample_inputs = inputs[sample_indices]
 
-    # Reconstruct images
     reconstructed_frames, _, _ = vae((sample_frames, sample_inputs))
 
-    # Plot original and reconstructed images
     plt.figure(figsize=(20, 4))
     for i in range(10):
-        # Original image
         plt.subplot(2, 10, i + 1)
         plt.imshow(sample_frames[i].squeeze(), cmap="gray")
         plt.axis("off")
         plt.title("Original")
 
-        # Reconstructed image
         plt.subplot(2, 10, i + 11)
         plt.imshow(reconstructed_frames[i].numpy().squeeze(), cmap="gray")
         plt.axis("off")
         plt.title("Reconstructed")
 
     plt.show()
+
 def plot_loss(history):
     # Extract the loss and validation loss
     loss = history.history.get('loss')
@@ -190,7 +188,7 @@ input_shape = inputs.shape[1:]  # (2,)
 input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
 
 # Calculate latent_dim as 20% of the total number of pixels
-latent_dim = int(0.1 * input_height * input_width * input_channels)
+latent_dim = int(0.2 * input_height * input_width * input_channels)
 print(f"Latent Dimension: {latent_dim}")
 
 vae = VAE(latent_dim)
@@ -205,6 +203,6 @@ vae.compile(optimizer='adam',
             loss=lambda y_true, y_pred: vae_loss(y_true[0], y_pred[0], y_pred[1], y_pred[2]))
 
 # Train the VAE
-history = vae.fit((frames, inputs), frames, batch_size=128, epochs=10)
+history = vae.fit((frames, inputs), frames, batch_size=128, epochs=50, validation_split=0.2)
 plot_loss(history)
-plot_reconstruction(frames, inputs)
+plot_reconstruction(frames, inputs, vae)

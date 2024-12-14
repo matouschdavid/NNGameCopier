@@ -4,7 +4,15 @@ from pynput import keyboard
 import pyautogui
 from PIL import ImageGrab
 from threading import Thread
+from screeninfo import get_monitors
 
+monitor = get_monitors()[0]
+print(monitor.width, monitor.height)
+
+width = 600
+height = width / 4
+start_x = monitor.width / 2 - width / 2
+start_y = 180
 # Folder to save screenshots
 output_folder = "captured_frames"
 os.makedirs(output_folder, exist_ok=True)
@@ -39,7 +47,7 @@ def capture_screen():
         frame_time = time.time() - start_time
 
         # Capture the screen
-        screenshot = ImageGrab.grab(bbox=(600, 280, 1210, 430))  # Adjust the coordinates as needed
+        screenshot = ImageGrab.grab(bbox=(start_x, start_y, start_x + width, start_y + height))  # Adjust the coordinates as needed
         screenshot.save(os.path.join(output_folder, f"frame_{frame_count:010}.png"))
 
         # Log the current keys for this frame

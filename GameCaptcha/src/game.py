@@ -1,6 +1,6 @@
 from tensorflow.keras.models import load_model
-from GameCaptcha.src.game_utils import encode_frames
 from GameCaptcha.src.io_utils import load_data
+from GameCaptcha.src.game_utils import encode_frames
 from GameCaptcha.src.vae import Sampling
 from GameCaptcha.src.window import Window
 import threading
@@ -11,9 +11,9 @@ predictor = load_model("models/lstm_model.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs = load_data(image_folder, input_file, max=110)
-frames = frames[-60:]
-inputs = inputs[-60:]
+frames, inputs = load_data(image_folder, input_file, max=500)
+frames = frames[-120:]
+inputs = inputs[-120:]
 latent_space_buffer = encode_frames(encoder, frames, inputs)
 
 input_dim = inputs.shape[1]

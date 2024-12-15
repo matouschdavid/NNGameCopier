@@ -1,16 +1,17 @@
 import numpy as np
 
-def predict_next_frame(decoder, lstm_model, latent_sequence, input_vector):
+def predict_next_frame(decoder, lstm_model, latent_sequence, input_vector, bot=False):
     """Predicts the next frame given a sequence of latent vectors."""
     next_latent = lstm_model.predict(latent_sequence[np.newaxis, ...])  # Predict next latent
 
     latent_only = remove_input_from_latent_space(next_latent, len(input_vector))
 
-    input_vector = np.expand_dims(input_vector, axis=0)
-    next_latent_with_input = np.concatenate([latent_only, input_vector], axis=-1)
+    if not bot:
+        input_vector = np.expand_dims(input_vector, axis=0)
+        next_latent = np.concatenate([latent_only, input_vector], axis=-1)
 
     next_frame = decoder(latent_only)
-    return next_frame, next_latent_with_input
+    return next_frame, next_latent
 
 def remove_input_from_latent_space(latent_space, input_dim):
     return latent_space[:, :-input_dim]  # Slice to exclude the appended input dimensions
@@ -33,12 +34,8 @@ def clean_image(image):
 def encode_frames(encoder, frames, inputs):
     _, _, z = encoder(frames)
     z = z.numpy()
-    # Ensure inputs are in the same batch format as z
+
     inputs = np.array(inputs)
-    if len(inputs.shape) == 1:
-        inputs = np.expand_dims(inputs, axis=0)  # Add batch dimension if necessary
 
-    # Concatenate the latent space and the inputs along the last dimension
-    combined_z = np.concatenate([z, inputs], axis=-1)
-
+    combined_z = np.array([np.concatenate([a1, a2]) for a1, a2 in zip(z, inputs)])
     return combined_z

@@ -24,6 +24,7 @@ os.makedirs(output_folder, exist_ok=True)
 frame_logs = {}
 running = True
 capture_started = False
+frame_count = 18052
 
 current_keys = set()
 
@@ -66,7 +67,7 @@ def on_release(key):
         return False
 
 def capture_screen():
-    frame_count = 0
+    global frame_count
     start_time = time.time()
     while running:
         frame_time = time.time() - start_time
@@ -103,7 +104,7 @@ def main():
     capture_thread.join()
 
     # Save key logs
-    with open(os.path.join(output_folder, "key_logs.txt"), "w") as f:
+    with open(os.path.join(output_folder, "key_logs.txt"), "a") as f:
         for frame, keys in sorted(frame_logs.items()):
             f.write(f"frame_{frame:010}: {keys}\n")
 

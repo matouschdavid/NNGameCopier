@@ -13,7 +13,7 @@ frames, _ = load_data(image_folder, input_file)
 
 input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
 
-latent_dim = int(0.1 * input_height * input_width * input_channels)
+latent_dim = int(0.05 * input_height * input_width * input_channels)
 print(f"Latent Dimension: {latent_dim}")
 
 encoder_inputs = keras.Input(shape=(input_height, input_width, input_channels))
@@ -22,6 +22,7 @@ x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(x)
 x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
 x = layers.Flatten()(x)
 x = layers.Dense(int(latent_dim * 1.5), activation="relu")(x)
+x = layers.Dense(latent_dim, activation="relu")(x)
 z_mean = layers.Dense(latent_dim, name="z_mean")(x)
 z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
 z = Sampling()([z_mean, z_log_var])
@@ -39,8 +40,8 @@ decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
 vae = VAE(encoder, decoder)
 vae.compile(optimizer=keras.optimizers.Adam())
-history = vae.fit(frames, epochs=100, batch_size=96)
-
+history = vae.fit(frames, epochs=500, batch_size=96)
+print("Done training")
 plot_loss(history)
 plot_reconstruction(frames, vae)
 

@@ -22,7 +22,7 @@ frames, inputs = load_data(image_folder, input_file)
 
 input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
 
-latent_dim = int(0.1 * input_height * input_width * input_channels)
+latent_dim = int(0.05 * input_height * input_width * input_channels)
 input_dim = inputs.shape[1]
 print(f"Latent Dimension: {latent_dim}, Input Dimension: {input_dim}")
 
@@ -33,31 +33,28 @@ def create_sequences(data, sequence_length):
         y.append(data[i + sequence_length])
     return np.array(X), np.array(y)
 
-sequence_length = 60
+sequence_length = 120
 
 latent_dim = latent_dim + input_dim
 lstm_inputs = keras.Input(shape=(sequence_length, latent_dim))
-x = layers.LSTM(128, return_sequences=False)(lstm_inputs)
+x = layers.LSTM(128, return_sequences=True)(lstm_inputs)
+x = layers.Dropout(0.2)(x)
+x = layers.LSTM(64, return_sequences=False)(x)
 x = layers.Dropout(0.2)(x)
 lstm_outputs = layers.Dense(latent_dim)(x)
 lstm_model = Model(lstm_inputs, lstm_outputs, name="lstm_model")
 lstm_model.compile(optimizer=keras.optimizers.Adam(), loss="mse")
 
 chunk_size = 2000
-for i in range(0, len(frames), chunk_size):
-    print(f"Processing {i}:{i + chunk_size}")
-    chunk = encode_frames(encoder, frames[i:i + chunk_size], inputs[i:i + chunk_size])
-    if len(chunk) > sequence_length:
-        X_chunk, y_chunk = create_sequences(chunk, sequence_length)
-        lstm_model.fit(X_chunk, y_chunk, epochs=500, batch_size=96)
+for k in range(10):
+    for i in range(0, len(frames), chunk_size):
+        print(f"({k})Processing {i}:{i + chunk_size}")
+        chunk = encode_frames(encoder, frames[i:i + chunk_size], inputs[i:i + chunk_size])
+        if len(chunk) > sequence_length:
+            X_chunk, y_chunk = create_sequences(chunk, sequence_length)
+            lstm_model.fit(X_chunk, y_chunk, epochs=50, batch_size=96, validation_split=0.2)
 
-test_sequence = encode_frames(encoder, frames[25:85], inputs[25:85])
-# predicted_frame, predicted_latent_space = predict_next_frame(decoder, lstm_model, test_sequence, input_dim)
-#
-# test_sequence = update_latent_space_buffer(test_sequence, predicted_latent_space)
-# test_frames = [clean_image(decoder(remove_input_from_latent_space(np.expand_dims(x, axis=0), input_dim))) for x in test_sequence[-10:]]
-#
-# plot_sequence(test_frames)
+test_sequence = encode_frames(encoder, frames[:120], inputs[:120])
 jump = [1, 0]
 duck = [0, 1]
 nothing = [0, 0]

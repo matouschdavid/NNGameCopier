@@ -5,20 +5,20 @@ from GameCaptcha.src.game_utils import predict_next_frame, update_latent_space_b
     remove_input_from_latent_space
 
 
-def plot_reconstruction(frames, vae):
-    sample_indices = np.random.choice(len(frames), size=10, replace=False)
+def plot_reconstruction(frames, vae, size=10):
+    sample_indices = np.random.choice(len(frames), size=size, replace=False)
     sample_frames = frames[sample_indices]
 
     reconstructed_frames, z = vae(sample_frames)
 
-    plt.figure(figsize=(20, 4))
-    for i in range(10):
-        plt.subplot(2, 10, i + 1)
+    plt.figure(figsize=(size*2, 2))
+    for i in range(size):
+        plt.subplot(2, size, i + 1)
         plt.imshow(sample_frames[i].squeeze(), cmap="gray")
         plt.axis("off")
         plt.title("Original")
 
-        plt.subplot(2, 10, i + 11)
+        plt.subplot(2, size, i + 1 + size)
         plt.imshow(reconstructed_frames[i].numpy().squeeze(), cmap="gray")
         plt.axis("off")
         plt.title("Reconstructed")

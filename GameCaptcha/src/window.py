@@ -29,14 +29,14 @@ class Window:
 
     def update(self, latent_space_buffer, decoder, predictor, input_dim):
         """Updates the window with the predicted frames."""
-        next_image, next_latent_space = predict_next_frame(decoder, predictor, latent_space_buffer, [1,0])
+        next_image, next_latent_space = predict_next_frame(decoder, predictor, latent_space_buffer, [0,0], bot=True)
         latent_space_buffer = update_latent_space_buffer(latent_space_buffer, next_latent_space)
+        print(latent_space_buffer.shape)
 
         next_image = clean_image(next_image)
 
         next_image_pil = Image.fromarray(next_image)
         self.set_image(next_image_pil)
-        print("Updated image")
 
         return latent_space_buffer
 

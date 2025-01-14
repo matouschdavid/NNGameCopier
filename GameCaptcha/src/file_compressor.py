@@ -2,7 +2,7 @@ import os
 import shutil
 from PIL import Image
 
-from GameCaptcha.src.io_utils import extract_data_from_line
+from io_utils import extract_data_from_line
 
 
 # Load Frames and Inputs

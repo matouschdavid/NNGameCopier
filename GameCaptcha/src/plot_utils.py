@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from GameCaptcha.src.game_utils import predict_next_frame, update_latent_space_buffer, clean_image, \
+from game_utils import predict_next_frame, update_latent_space_buffer, clean_image, \
     remove_input_from_latent_space
 
 

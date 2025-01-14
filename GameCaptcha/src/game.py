@@ -1,8 +1,8 @@
 from tensorflow.keras.models import load_model
-from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.game_utils import encode_frames
-from GameCaptcha.src.vae import Sampling
-from GameCaptcha.src.window import Window
+from io_utils import load_data
+from game_utils import encode_frames
+from vae import Sampling
+from window import Window
 import threading
 
 encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})

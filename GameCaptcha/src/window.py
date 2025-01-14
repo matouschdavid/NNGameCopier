@@ -4,9 +4,9 @@ from PIL import Image, ImageTk
 import time
 from pynput import keyboard
 
-from GameCaptcha.src.game_capture import one_hot_encode_input
-from GameCaptcha.src.game_utils import predict_next_frame, update_latent_space_buffer, clean_image
-from GameCaptcha.src.plot_utils import plot_frame
+from game_capture import one_hot_encode_input
+from game_utils import predict_next_frame, update_latent_space_buffer, clean_image
+from plot_utils import plot_frame
 
 
 class Window:

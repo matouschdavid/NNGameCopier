@@ -1,11 +1,14 @@
-from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
+from io_utils import load_data
+from plot_utils import plot_loss, plot_reconstruction
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from GameCaptcha.src.vae import Sampling, VAE
+from vae import Sampling, VAE
+import os
+
+os.environ['HSA_OVERRIDE_GFX_VERSION']="11.0.0"
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
@@ -42,7 +45,7 @@ decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
 vae = VAE(encoder, decoder)
 vae.compile(optimizer=keras.optimizers.Adam())
-history = vae.fit(frames, epochs=500, batch_size=96)
+history = vae.fit(frames, epochs=10, batch_size=1024)
 print("Done training")
 
 vae.encoder.save("models/vae_encoder.keras")

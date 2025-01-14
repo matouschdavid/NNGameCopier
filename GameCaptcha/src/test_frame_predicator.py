@@ -1,10 +1,10 @@
-from GameCaptcha.src.game_utils import encode_frames
-from GameCaptcha.src.plot_utils import plot_prediction
-from GameCaptcha.src.io_utils import load_data
+from game_utils import encode_frames
+from plot_utils import plot_prediction
+from io_utils import load_data
 from tensorflow import keras
 from tensorflow.keras.models import load_model
 
-from GameCaptcha.src.vae import Sampling
+from vae import Sampling
 
 keras.config.enable_unsafe_deserialization()
 encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})

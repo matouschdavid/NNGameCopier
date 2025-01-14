@@ -15,6 +15,9 @@ from GameCaptcha.src.vae import Sampling
 
 encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
 decoder = load_model("models/vae_decoder.keras")
+lstm_model = load_model("models/lstm_model.keras")
+
+restart_training = False
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
@@ -37,14 +40,15 @@ def create_sequences(data, sequence_length):
 sequence_length = 180
 
 latent_dim = latent_dim + input_dim
-lstm_inputs = keras.Input(shape=(sequence_length, latent_dim))
-x = layers.LSTM(128, return_sequences=True)(lstm_inputs)
-x = layers.Dropout(0.2)(x)
-x = layers.LSTM(64, return_sequences=False)(x)
-x = layers.Dropout(0.2)(x)
-lstm_outputs = layers.Dense(latent_dim)(x)
-lstm_model = Model(lstm_inputs, lstm_outputs, name="lstm_model")
-lstm_model.compile(optimizer=keras.optimizers.Adam(), loss="mse")
+if restart_training:
+    lstm_inputs = keras.Input(shape=(sequence_length, latent_dim))
+    x = layers.LSTM(128, return_sequences=True)(lstm_inputs)
+    x = layers.Dropout(0.2)(x)
+    x = layers.LSTM(64, return_sequences=False)(x)
+    x = layers.Dropout(0.2)(x)
+    lstm_outputs = layers.Dense(latent_dim)(x)
+    lstm_model = Model(lstm_inputs, lstm_outputs, name="lstm_model")
+    lstm_model.compile(optimizer=keras.optimizers.Adam(), loss="mse")
 
 chunk_size = 2000
 for k in range(5):

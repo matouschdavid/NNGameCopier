@@ -13,8 +13,8 @@ from tensorflow.keras.models import load_model
 from GameCaptcha.src.plot_utils import plot_sequence, plot_prediction
 from GameCaptcha.src.vae import Sampling
 
-encoder = load_model("models/vae_encoder_tiny.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder_tiny.keras")
+encoder = load_model("models/vae_encoder_time.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/vae_decoder_time.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
@@ -79,7 +79,7 @@ for k in range(10):
             X_chunk, y_chunk = create_sequences(chunk, sequence_length)
             lstm_model.fit(X_chunk, y_chunk, epochs=50, batch_size=96, validation_split=0.2)
 
-lstm_model.save("models/lstm_model_tiny.keras")
+lstm_model.save("models/lstm_model_time.keras")
 
 test_sequence = encode_frames(encoder, frames[:60], inputs[:60], timestamps[:60])
 jump = [1, 0]

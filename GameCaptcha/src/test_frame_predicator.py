@@ -7,9 +7,9 @@ from tensorflow.keras.models import load_model
 from GameCaptcha.src.vae import Sampling
 
 keras.config.enable_unsafe_deserialization()
-encoder = load_model("models/vae_encoder_tiny.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder_tiny.keras")
-predictor = load_model("models/lstm_model_tiny.keras")
+encoder = load_model("models/vae_encoder_time.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/vae_decoder_time.keras")
+predictor = load_model("models/lstm_model_time.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"

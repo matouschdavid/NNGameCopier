@@ -47,5 +47,5 @@ print("Done training")
 plot_loss(history)
 plot_reconstruction(frames, vae)
 
-vae.encoder.save("models/vae_encoder_time.keras")
-vae.decoder.save("models/vae_decoder_time.keras")
+vae.encoder.save("models/vae_encoder.keras")
+vae.decoder.save("models/vae_decoder.keras")

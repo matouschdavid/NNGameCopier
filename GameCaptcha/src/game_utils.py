@@ -8,12 +8,7 @@ def predict_next_frame(decoder, lstm_model, latent_sequence, input_vector, bot=F
 
     if not bot:
         input_vector = np.expand_dims(input_vector, axis=0)
-        timestamp = latent_sequence[-1][-1] + 1
-        print(timestamp)
-        timestamp = np.expand_dims(timestamp, axis=0)
-        timestamp = np.expand_dims(timestamp, axis=0)
-        next_latent = np.concatenate([latent_only, input_vector, timestamp], axis=-1)
-        print(next_latent)
+        next_latent = np.concatenate([latent_only, input_vector], axis=-1)
 
     next_frame = decoder(latent_only)
     return next_frame, next_latent
@@ -36,13 +31,11 @@ def clean_image(image):
 
     return image
 
-def encode_frames(encoder, frames, inputs, timestamps):
+def encode_frames(encoder, frames, inputs):
     _, _, z = encoder(frames)
     z = z.numpy()
 
     inputs = np.array(inputs)
 
-    timestamps = np.expand_dims(timestamps, axis=1)
-
-    combined_z = np.array([np.concatenate([a1, a2, a3]) for a1, a2, a3 in zip(z, inputs, timestamps)])
+    combined_z = np.array([np.concatenate([a1, a2]) for a1, a2 in zip(z, inputs)])
     return combined_z

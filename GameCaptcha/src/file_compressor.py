@@ -2,6 +2,9 @@ import os
 import shutil
 from PIL import Image
 
+from GameCaptcha.src.io_utils import extract_data_from_line
+
+
 # Load Frames and Inputs
 def compress_data(image_folder, input_file):
     output_folder = "compressed_frames"
@@ -12,9 +15,7 @@ def compress_data(image_folder, input_file):
         lines = f.readlines()
 
     for line in lines:
-        filename, input_vector = line.strip().split(":")
-        input_vector = list(map(float, input_vector.replace("[", "").replace("]", "").split(",")))
-
+        filename, input_vector, time_stamp = extract_data_from_line(line.strip())
         # Load and normalize image
         image_path = os.path.join(image_folder, f"{filename}.png")
         image = Image.open(image_path).convert("L")

@@ -5,16 +5,16 @@ from GameCaptcha.src.vae import Sampling
 from GameCaptcha.src.window import Window
 import threading
 
-encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder.keras")
-predictor = load_model("models/lstm_model.keras")
+encoder = load_model("models/vae_encoder_tiny.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/vae_decoder_tiny.keras")
+predictor = load_model("models/lstm_model_tiny.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs = load_data(image_folder, input_file, max=500)
+frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=120)
 frames = frames[-120:]
 inputs = inputs[-120:]
-latent_space_buffer = encode_frames(encoder, frames, inputs)
+latent_space_buffer = encode_frames(encoder, frames, inputs, timestamps)
 
 input_dim = inputs.shape[1]
 frame_rate = 15

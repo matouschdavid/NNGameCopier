@@ -24,12 +24,13 @@ os.makedirs(output_folder, exist_ok=True)
 frame_logs = {}
 running = True
 capture_started = False
-frame_count = 18052
+frame_count = 0
+capture_count = 0
 
 current_keys = set()
 
 def process_setup_keys(key):
-    global start_x, start_y, width, height, capture_started
+    global start_x, start_y, width, height, capture_started, capture_count
     k_chr = key.char
     mouse_position = mouse.position
 
@@ -47,6 +48,8 @@ def process_setup_keys(key):
     elif k_chr == "3":
         capture_started = True
         print("capture_started")
+    elif k_chr == "0":
+        capture_count = 0
 
 def on_press(key):
     try:
@@ -67,7 +70,7 @@ def on_release(key):
         return False
 
 def capture_screen():
-    global frame_count
+    global frame_count, capture_count
     start_time = time.time()
     while running:
         frame_time = time.time() - start_time
@@ -78,9 +81,10 @@ def capture_screen():
             screenshot.save(os.path.join(output_folder, f"frame_{frame_count:010}.png"))
 
             # Log the current keys for this frame
-            frame_logs[frame_count] = one_hot_encode_input(current_keys)
+            frame_logs[frame_count] = (one_hot_encode_input(current_keys), capture_count)
 
             frame_count += 1
+            capture_count += 1
 
         time.sleep(max(0, int((1 / 60) - (time.time() - frame_time))))
 

@@ -9,11 +9,12 @@ from GameCaptcha.src.vae import Sampling, VAE
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, _ = load_data(image_folder, input_file)
+frames, _, _ = load_data(image_folder, input_file)
 
 input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
 
-latent_dim = int(0.05 * input_height * input_width * input_channels)
+# latent_dim = int(0.05 * input_height * input_width * input_channels)
+latent_dim = 128
 print(f"Latent Dimension: {latent_dim}")
 
 encoder_inputs = keras.Input(shape=(input_height, input_width, input_channels))
@@ -29,7 +30,8 @@ z = Sampling()([z_mean, z_log_var])
 encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
 latent_inputs = keras.Input(shape=(latent_dim,))
-x = layers.Dense(4 * 16 * 64, activation="relu")(latent_inputs)
+x = layers.Dense(16 * 64, activation="relu")(latent_inputs)
+x = layers.Dense(4 * 16 * 64, activation="relu")(x)
 x = layers.Reshape((4, 16, 64))(x)
 x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
 x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
@@ -45,5 +47,5 @@ print("Done training")
 plot_loss(history)
 plot_reconstruction(frames, vae)
 
-vae.encoder.save("models/vae_encoder.keras")
-vae.decoder.save("models/vae_decoder.keras")
+vae.encoder.save("models/vae_encoder_tiny.keras")
+vae.decoder.save("models/vae_decoder_tiny.keras")

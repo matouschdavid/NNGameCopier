@@ -5,19 +5,19 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import SimpleRNN, Dense, Input, LSTM, Dropout, BatchNormalization
 import matplotlib.pyplot as plt
 
-from GameCaptcha.src.game_utils import predict_next_frame, update_latent_space_buffer, clean_image, \
+from game_utils import predict_next_frame, update_latent_space_buffer, clean_image, \
     remove_input_from_latent_space, encode_frames
-from GameCaptcha.src.io_utils import load_data
+from io_utils import load_data
 from tensorflow.keras.models import load_model
 
-from GameCaptcha.src.plot_utils import plot_prediction
-from GameCaptcha.src.vae import Sampling
+from plot_utils import plot_prediction
+from vae import Sampling
+
+restart_training = True
 
 encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
 decoder = load_model("models/vae_decoder.keras")
-lstm_model = load_model("models/lstm_model.keras")
-
-restart_training = False
+if not restart_training: lstm_model = load_model("models/lstm_model.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"

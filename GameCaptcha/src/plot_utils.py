@@ -66,7 +66,7 @@ def plot_loss(history):
     plt.show()
 
 def plot_prediction(last_frames, inputs_at_start, frames_to_predict, decoder, lstm):
-    last_image = clean_image(decoder(remove_input_from_latent_space(np.expand_dims(last_frames[-1], axis=0), len(inputs_at_start[0]))))
+    last_image = clean_image(decoder(remove_input_from_latent_space(np.expand_dims(last_frames[-1], axis=0), len(inputs_at_start[0]) + 1)))
     image_index = 1
     plt.figure(figsize=(10, 6))
     for input_at_start in inputs_at_start:

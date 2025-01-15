@@ -12,10 +12,11 @@ predictor = load_model("models/lstm_model.keras")
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
 sequence_length = 180
-frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=500)
+frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=120)
 frames = frames[-sequence_length:]
 inputs = inputs[-sequence_length:]
-latent_space_buffer = encode_frames(encoder, frames, inputs)
+timestamps = timestamps[-sequence_length:]
+latent_space_buffer = encode_frames(encoder, frames, inputs, timestamps)
 
 input_dim = inputs.shape[1]
 frame_rate = 15

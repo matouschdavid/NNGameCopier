@@ -52,6 +52,7 @@ class Window:
         while self.running:
             start_time = time.time()
             self.input_vector = one_hot_encode_input(self.current_keys)
+            print(self.input_vector)
             latent_space_buffer = self.update(latent_space_buffer, decoder, predictor, self.input_vector)
             time_diff = time.time() - start_time
 

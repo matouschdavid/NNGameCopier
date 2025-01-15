@@ -44,10 +44,8 @@ vae = VAE(encoder, decoder)
 vae.compile(optimizer=keras.optimizers.Adam())
 history = vae.fit(frames, epochs=500, batch_size=96)
 print("Done training")
-
-vae.encoder.save("models/vae_encoder.keras")
-vae.decoder.save("models/vae_decoder.keras")
-
 plot_loss(history)
 plot_reconstruction(frames, vae)
 
+vae.encoder.save("models/vae_encoder.keras")
+vae.decoder.save("models/vae_decoder.keras")

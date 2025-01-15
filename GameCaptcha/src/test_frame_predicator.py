@@ -7,20 +7,21 @@ from tensorflow.keras.models import load_model
 from GameCaptcha.src.vae import Sampling
 
 keras.config.enable_unsafe_deserialization()
-encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder.keras")
-predictor = load_model("models/lstm_model.keras")
+encoder = load_model("models/vae_encoder_time.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/vae_decoder_time.keras")
+predictor = load_model("models/lstm_model_time.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs, _ = load_data(image_folder, input_file, min=0, max=120)
+frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=120)
 last_frame = 120
 first_mem_frame = last_frame - 120
 
 frames_slice = frames[first_mem_frame:last_frame]
 inputs_slice = inputs[first_mem_frame:last_frame]
+timestamps_slice = timestamps[first_mem_frame:last_frame]
 
-test_sequence = encode_frames(encoder, frames_slice, inputs_slice)
+test_sequence = encode_frames(encoder, frames_slice, inputs_slice, timestamps_slice)
 print(test_sequence[-1])
 
 jump = [1, 0]

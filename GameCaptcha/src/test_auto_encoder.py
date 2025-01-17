@@ -8,7 +8,7 @@ decoder = load_model("models/vae_decoder.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs, _ = load_data(image_folder, input_file, max=500)
+frames, inputs, timestamps = load_data(image_folder, input_file, max=500)
 
 vae = VAE(encoder, decoder)
 plot_reconstruction(frames, vae, size=100)

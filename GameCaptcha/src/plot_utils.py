@@ -65,8 +65,8 @@ def plot_loss(history):
     plt.tight_layout()
     plt.show()
 
-def plot_prediction(last_frames, inputs_at_start, frames_to_predict, decoder, lstm):
-    last_image = clean_image(decoder(remove_input_from_latent_space(np.expand_dims(last_frames[-1], axis=0), len(inputs_at_start[0]) + 1)))
+def plot_prediction(last_frames, inputs_at_start, frames_to_predict, decoder, lstm, max_time, input_prominence, time_dim):
+    last_image = clean_image(decoder(remove_input_from_latent_space(np.expand_dims(last_frames[-1], axis=0), len(inputs_at_start[0]), input_prominence, time_dim)))
     image_index = 1
     plt.figure(figsize=(10, 6))
     for input_at_start in inputs_at_start:
@@ -80,9 +80,9 @@ def plot_prediction(last_frames, inputs_at_start, frames_to_predict, decoder, ls
             plt.subplot(len(inputs_at_start), frames_to_predict + 1, image_index)
             if i == 0:
                 plt.title(f"{input_at_start}")
-                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, input_at_start)
+                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, max_time, input_at_start, input_prominence, time_dim)
             else:
-                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, [0, 0])
+                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, max_time, [0, 0], input_prominence, time_dim)
             last_frames = update_latent_space_buffer(last_frames, next_latent_space)
 
             next_image = clean_image(next_image)

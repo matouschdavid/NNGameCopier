@@ -1,25 +1,27 @@
 import numpy as np
 
-def predict_next_frame(decoder, lstm_model, latent_sequence, input_vector, bot=False):
+def predict_next_frame(decoder, lstm_model, latent_sequence, max_time, input_vector, input_prominence, time_dim, bot=False):
     """Predicts the next frame given a sequence of latent vectors."""
-    next_latent = lstm_model.predict(latent_sequence[np.newaxis, ...])  # Predict next latent
+    next_latent = lstm_model.predict(latent_sequence[np.newaxis, ...], verbose=0)  # Predict next latent
 
-    latent_only = remove_input_from_latent_space(next_latent, len(input_vector))
+    latent_only = remove_input_from_latent_space(next_latent, len(input_vector), input_prominence, time_dim)
 
     if not bot:
+        input_vector = np.tile(input_vector, input_prominence)
         input_vector = np.expand_dims(input_vector, axis=0)
-        timestamp = latent_sequence[-1][-1] + 1
-        print(timestamp)
+        timestamp = latent_sequence[-1][-1] + (1 / max_time)
+        if timestamp > 0.8:
+            print("Reset time")
+            timestamp = 0
         timestamp = np.expand_dims(timestamp, axis=0)
         timestamp = np.expand_dims(timestamp, axis=0)
         next_latent = np.concatenate([latent_only, input_vector, timestamp], axis=-1)
-        print(next_latent)
 
     next_frame = decoder(latent_only)
     return next_frame, next_latent
 
-def remove_input_from_latent_space(latent_space, input_dim):
-    return latent_space[:, :-(input_dim)]  # Slice to exclude the appended input dimensions
+def remove_input_from_latent_space(latent_space, input_dim, input_prominence, time_dim):
+    return latent_space[:, :-(input_dim * input_prominence + time_dim)]
 
 def update_latent_space_buffer(latent_space_buffer, new_latent_space):
     # Roll the buffer to the left (remove the first element)
@@ -36,11 +38,12 @@ def clean_image(image):
 
     return image
 
-def encode_frames(encoder, frames, inputs, timestamps):
+def encode_frames(encoder, frames, inputs, timestamps, input_prominence):
     _, _, z = encoder(frames)
     z = z.numpy()
 
     inputs = np.array(inputs)
+    inputs = np.tile(inputs, input_prominence)
 
     timestamps = np.expand_dims(timestamps, axis=1)
 

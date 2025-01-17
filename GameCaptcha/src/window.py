@@ -31,20 +31,20 @@ class Window:
         self.image_label.config(image=self.current_image)
         self.image_label.image = self.current_image  # Keep a reference
 
-    def update(self, latent_space_buffer, decoder, predictor, input_vector):
+    def update(self, latent_space_buffer, decoder, predictor, input_vector, max_time, input_prominence, time_dim, resolution):
         """Updates the window with the predicted frames."""
-        next_image, next_latent_space = predict_next_frame(decoder, predictor, latent_space_buffer, input_vector, bot=False)
+        next_image, next_latent_space = predict_next_frame(decoder, predictor, latent_space_buffer, max_time, input_vector, input_prominence, time_dim, bot=False)
         latent_space_buffer = update_latent_space_buffer(latent_space_buffer, next_latent_space)
-        print(latent_space_buffer.shape)
 
         next_image = clean_image(next_image)
 
         next_image_pil = Image.fromarray(next_image)
+        next_image_pil = next_image_pil.resize(resolution)
         self.set_image(next_image_pil)
 
         return latent_space_buffer
 
-    def start_prediction_loop(self, latent_space_buffer, decoder, predictor, input_dim, target_frame_rate):
+    def start_prediction_loop(self, latent_space_buffer, decoder, predictor, input_dim, target_frame_rate, max_time, input_prominence, time_dim, resolution):
         """Run the prediction loop in a separate thread."""
         delta_time = 1 / target_frame_rate
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
@@ -52,8 +52,7 @@ class Window:
         while self.running:
             start_time = time.time()
             self.input_vector = one_hot_encode_input(self.current_keys)
-            print(self.input_vector)
-            latent_space_buffer = self.update(latent_space_buffer, decoder, predictor, self.input_vector)
+            latent_space_buffer = self.update(latent_space_buffer, decoder, predictor, self.input_vector, max_time, input_prominence, time_dim, resolution)
             time_diff = time.time() - start_time
 
             if time_diff < delta_time:

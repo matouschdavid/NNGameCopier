@@ -11,18 +11,22 @@ predictor = load_model("models/lstm_model.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-sequence_length = 180
-frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=120)
+sequence_length = 120
+time_dim = 1
+input_prominence = 5
+frames, inputs, timestamps = load_data(image_folder, input_file, min=0, max=1090)
+max_time = 2439 # max time of dataset
 frames = frames[-sequence_length:]
 inputs = inputs[-sequence_length:]
-timestamps = timestamps[-sequence_length:]
-latent_space_buffer = encode_frames(encoder, frames, inputs, timestamps)
+timestamps = timestamps[-sequence_length:] / max_time
+latent_space_buffer = encode_frames(encoder, frames, inputs, timestamps, input_prominence)
 
 input_dim = inputs.shape[1]
 frame_rate = 15
+resolution = (1024, 256)
 
 app = Window()
-prediction_thread = threading.Thread(target=app.start_prediction_loop, args=(latent_space_buffer, decoder, predictor, input_dim, frame_rate))
+prediction_thread = threading.Thread(target=app.start_prediction_loop, args=(latent_space_buffer, decoder, predictor, input_dim, frame_rate, max_time, input_prominence, time_dim, resolution))
 prediction_thread.start()
 app.start()
 

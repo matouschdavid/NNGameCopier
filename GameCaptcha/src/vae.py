@@ -32,7 +32,6 @@ class VAE(keras.Model):
             z_mean, z_log_var, z = self.encoder(data)
 
             reconstruction = self.decoder(z)
-
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
                     keras.losses.binary_crossentropy(data, reconstruction), axis=(1, 2)

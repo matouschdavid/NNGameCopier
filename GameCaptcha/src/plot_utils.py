@@ -1,15 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from GameCaptcha.src.game_utils import predict_next_frame, update_latent_space_buffer, clean_image, \
-    remove_input_from_latent_space
 
-
-def plot_reconstruction(frames, vae, size=10):
+def plot_reconstruction(frames, encoder, decoder, size=10):
     sample_indices = np.random.choice(len(frames), size=size, replace=False)
     sample_frames = frames[sample_indices]
 
-    reconstructed_frames, z = vae(sample_frames)
+    latent_spaces = encoder.predict(sample_frames)
+    reconstructed_frames = decoder.predict(latent_spaces)
 
     plt.figure(figsize=(size*2, 2))
     for i in range(size):
@@ -19,7 +17,7 @@ def plot_reconstruction(frames, vae, size=10):
         plt.title("Original")
 
         plt.subplot(2, size, i + 1 + size)
-        plt.imshow(reconstructed_frames[i].numpy().squeeze(), cmap="gray")
+        plt.imshow(reconstructed_frames[i].squeeze(), cmap="gray")
         plt.axis("off")
         plt.title("Reconstructed")
 
@@ -65,28 +63,96 @@ def plot_loss(history):
     plt.tight_layout()
     plt.show()
 
-def plot_prediction(last_frames, inputs_at_start, frames_to_predict, decoder, lstm, max_time, input_prominence, time_dim):
-    last_image = clean_image(decoder(remove_input_from_latent_space(np.expand_dims(last_frames[-1], axis=0), len(inputs_at_start[0]), input_prominence, time_dim)))
-    image_index = 1
-    plt.figure(figsize=(10, 6))
+
+def predict_next_frame(encoder, decoder, lstm, latent_space_buffer, input_vector, time_value, input_prominence, time_dim):
+    """
+    Predict the next frame using the LSTM and decode it back to an image.
+    """
+    # Ensure input_vector has the correct shape
+    input_vector = np.expand_dims(np.tile(input_vector, input_prominence), axis=0)  # Add batch dimension and repeat
+    input_vector = np.expand_dims(input_vector, axis=1)  # Add time dimension (sequence_length = 1)
+
+    # Normalize the time value
+    time_value = np.expand_dims(np.expand_dims(time_value, axis=0), axis=1)  # Batch and time dimensions
+
+    # Predict the next latent space
+    next_latent_space = lstm.predict([latent_space_buffer, input_vector, time_value])
+
+    # Remove input and time from latent space
+    latent_space_cleaned = next_latent_space[:, :-time_dim]
+
+    # Reshape to match latent shape for the decoder
+    height, width, channels = encoder.output.shape[1:]  # Extract latent shape from encoder output
+    latent_space_cleaned = latent_space_cleaned.reshape((-1, height, width, channels))
+
+    # Decode the latent space to get the predicted frame
+    next_frame = decoder.predict(latent_space_cleaned)
+
+    return next_frame, latent_space_cleaned
+
+
+def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_predict, input_prominence, input_dim, time_dim, inputs_at_start):
+    """
+    Predict a sequence of frames starting from the last `sequence_length` frames, inputs, and times.
+    """
+    # Step 1: Initialize the latent space buffer
+    # Encode the last `sequence_length` frames to latent space
+    latent_space_buffer = np.expand_dims(encoder.predict(frames), axis=0)  # Add batch dimension
+
+
+    # Add batch and sequence dimensions
+    input_sequence = np.expand_dims(np.tile(inputs, (1, input_prominence)), axis=0)  # Repeat inputs for prominence
+    time_sequence = np.expand_dims(times, axis=0)  # Add batch dimension
+
+    # Step 3: Predict frames iteratively
+    predicted_frames = []
+
     for input_at_start in inputs_at_start:
-        plt.subplot(len(inputs_at_start), frames_to_predict + 1, image_index)
-        plt.imshow(last_image, cmap="gray")
+        for _ in range(frames_to_predict):
+            # Predict the next latent space
+            next_latent_space = lstm.predict([latent_space_buffer, input_sequence, time_sequence])
+
+            # Decode the next latent space to reconstruct the frame
+            next_latent_space_cleaned = next_latent_space[:, :-(time_dim + input_dim)]  # Remove time from latent space
+            height, width, channels = encoder.output.shape[1:]  # Latent shape from encoder output
+            next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
+
+            next_frame = decoder.predict(next_latent_space_cleaned)
+
+            # Store the predicted frame
+            predicted_frames.append(next_frame[0])  # Remove batch dimension
+
+            # Update the latent space buffer
+            latent_space_buffer = np.roll(latent_space_buffer, shift=-1, axis=1)  # Shift latent space buffer
+            latent_space_buffer[0, -1, :] = next_latent_space_cleaned[0]  # Add the new latent space
+
+            # Update the input and time sequences
+            input_sequence = np.roll(input_sequence, shift=-1, axis=1)  # Shift inputs
+            input_sequence[0, -1, :] = input_at_start  # Assume no new input (can modify as needed)
+
+            last_time_value = time_sequence[-1]
+            print(last_time_value)
+            time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
+            time_sequence[0, -1] = last_time_value + 1  # Assume no new time increment (modify as needed)
+
+    return predicted_frames
+
+
+def plot_frames(predicted_frames):
+    """
+    Plots a sequence of predicted frames.
+
+    Parameters:
+    - predicted_frames: List of predicted frames (images as numpy arrays).
+    """
+    num_frames = len(predicted_frames)
+    plt.figure(figsize=(15, 5))
+
+    for i, frame in enumerate(predicted_frames):
+        plt.subplot(1, num_frames, i + 1)
+        plt.imshow(frame.squeeze(), cmap="gray")  # Assumes grayscale images
         plt.axis("off")
-        plt.title("Start frame")
-        image_index += 1
+        plt.title(f"Frame {i + 1}")
 
-        for i in range(frames_to_predict):
-            plt.subplot(len(inputs_at_start), frames_to_predict + 1, image_index)
-            if i == 0:
-                plt.title(f"{input_at_start}")
-                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, max_time, input_at_start, input_prominence, time_dim)
-            else:
-                next_image, next_latent_space = predict_next_frame(decoder, lstm, last_frames, max_time, [0, 0], input_prominence, time_dim)
-            last_frames = update_latent_space_buffer(last_frames, next_latent_space)
-
-            next_image = clean_image(next_image)
-            plt.imshow(next_image, cmap="gray")
-            plt.axis("off")
-            image_index += 1
+    plt.tight_layout()
     plt.show()

@@ -19,7 +19,7 @@ def load_data(image_folder, input_file, min=0, max=-1):
             # Load and normalize image
             image_path = os.path.join(image_folder, f"{filename}.png")
             image = Image.open(image_path).convert("L")
-            image = image.resize((256, 48))  # Resize to desired dimensions
+            image = image.resize((128, 96))  # Resize to desired dimensions
             image = np.array(image) / 255.0  # Normalize to [0, 1]
             image = np.expand_dims(image, axis=-1)  # Add channel dimension
 

@@ -7,6 +7,8 @@ from threading import Thread
 from screeninfo import get_monitors
 from pynput.mouse import Controller
 
+fps = 15
+
 monitor = get_monitors()[0]
 print(monitor.width, monitor.height)
 mouse = Controller()
@@ -49,7 +51,9 @@ def process_setup_keys(key):
         capture_started = True
         print("capture_started")
     elif k_chr == "0":
+        capture_started = False
         capture_count = 0
+        print("capture_stopped")
 
 def on_press(key):
     try:
@@ -86,11 +90,16 @@ def capture_screen():
             frame_count += 1
             capture_count += 1
 
-        time.sleep(max(0, int((1 / 60) - (time.time() - frame_time))))
+        time.sleep(max(0, int((1 / fps) - (time.time() - frame_time))))
 
 def one_hot_encode_input(keys):
     # [<space-bit>, <down-bit>]
-    output = [1 if "Key.space" in keys else 0, 1 if "Key.down" in keys else 0]
+    output = [
+        1 if "Key.up" in keys else 0, 
+        1 if "Key.down" in keys else 0,
+        1 if "Key.left" in keys else 0,
+        1 if "Key.right" in keys else 0
+    ]
 
     return output
 

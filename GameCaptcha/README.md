@@ -51,3 +51,9 @@ python train_auto_encoder.py
 ```bash
 python game.py
 ```
+
+### Games
+
+#### Snake
+
+https://playsnake.org/

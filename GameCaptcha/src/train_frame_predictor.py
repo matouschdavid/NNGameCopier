@@ -13,8 +13,11 @@ from tensorflow.keras.models import load_model
 
 from plot_utils import plot_prediction
 from vae import Sampling
+import os
 
-restart_training = False
+os.environ['HSA_OVERRIDE_GFX_VERSION']="11.0.0"
+
+restart_training = True
 
 encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
 decoder = load_model("models/vae_decoder.keras")
@@ -49,8 +52,8 @@ time_dim = 1
 lstm_inputs = keras.Input(shape=(sequence_length, latent_dim + time_dim))
 
 # Split the input into latent space + input vector and the time variable
-main_input = lstm_inputs[..., :-time_dim]  # All except the last feature
-time_input = lstm_inputs[..., -time_dim:]  # The last feature is the time variable
+main_input = lstm_inputs[:, :, :-time_dim]
+time_input = lstm_inputs[:, :, -time_dim:]
 
 # LSTM processing
 x = layers.LSTM(128, return_sequences=True)(main_input)
@@ -68,12 +71,16 @@ x = layers.Concatenate()([x, time_flattened])
 # Final output layer
 lstm_outputs = layers.Dense(latent_dim + time_dim)(x)
 
+print(f"lstm_inputs shape: {lstm_inputs.shape}")
+print(f"main_input shape: {main_input.shape}")
+print(f"time_input shape: {time_input.shape}")
+
 # Define and compile the model
 lstm_model = Model(lstm_inputs, lstm_outputs, name="lstm_model")
 lstm_model.compile(optimizer=keras.optimizers.Adam(), loss="mse")
 
 chunks = []
-chunk_size = 2000
+chunk_size = 4000
 for k in range(3):
     for i in range(0, len(frames), chunk_size):
         chunks.append((i,i + chunk_size))
@@ -89,14 +96,17 @@ for chunk_data in chunks:
                           input_prominence)
     if len(chunk) > sequence_length:
         X_chunk, y_chunk = create_sequences(chunk, sequence_length)
-        lstm_model.fit(X_chunk, y_chunk, epochs=50, batch_size=96, validation_split=0.2)
+        lstm_model.fit(X_chunk, y_chunk, epochs=50, batch_size=128, validation_split=0.2)
     counter += 1
 
+#lstm_model.save_weights("models/lstm_model.weights.h5")
 lstm_model.save("models/lstm_model.keras")
 
 test_sequence = encode_frames(encoder, frames[:sequence_length], inputs[:sequence_length], timestamps[:sequence_length], input_prominence)
-jump = [1, 0]
-duck = [0, 1]
-nothing = [0, 0]
-plot_prediction(test_sequence, [jump, duck, nothing], 5, decoder, lstm_model, max_time, input_prominence, time_dim)
+up = [1, 0, 0, 0]
+down = [0, 1, 0, 0]
+left = [0, 0, 1, 0]
+right = [0, 0, 0, 1]
+nothing = [0, 0, 0, 0]
+plot_prediction(test_sequence, [up, down, left, right, nothing], 5, decoder, lstm_model, max_time, input_prominence, time_dim)
 

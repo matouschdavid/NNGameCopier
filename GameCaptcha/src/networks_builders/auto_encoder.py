@@ -1,8 +1,8 @@
 from keras import Model
 from keras.src.losses import BinaryCrossentropy
 
-from GameCaptcha.src.networks_builders.decoder import build_decoder
-from GameCaptcha.src.networks_builders.encoder import build_encoder
+from networks_builders.decoder import build_decoder
+from networks_builders.encoder import build_encoder
 
 import keras.backend as K
 import tensorflow as tf

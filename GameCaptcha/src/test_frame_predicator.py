@@ -13,9 +13,9 @@ predictor = load_model("models/lstm_model.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-sequence_length = 180
-frames, inputs, timestamps = load_data(image_folder, input_file, max=1090)
-max_time = 2439
+sequence_length = 120
+frames, inputs, timestamps = load_data(image_folder, input_file, max=200)
+max_time = 5898
 time_dim = 1
 input_prominence = 5
 
@@ -25,7 +25,9 @@ timestamps_slice = timestamps[-sequence_length:] / max_time
 
 test_sequence = encode_frames(encoder, frames_slice, inputs_slice, timestamps_slice, input_prominence)
 
-jump = [1, 0]
-duck = [0, 1]
-nothing = [0, 0]
-plot_prediction(test_sequence, [jump, duck, nothing], 5, decoder, predictor, max_time, input_prominence, time_dim)
+up = [1, 0, 0, 0]
+down = [0, 1, 0, 0]
+left = [0, 0, 1, 0]
+right = [0, 0, 0, 1]
+nothing = [0, 0, 0, 0]
+plot_prediction(test_sequence, [up, down, left, right, nothing], 5, decoder, predictor, max_time, input_prominence, time_dim)

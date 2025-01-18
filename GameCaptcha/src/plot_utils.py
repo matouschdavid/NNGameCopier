@@ -130,8 +130,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
             input_sequence = np.roll(input_sequence, shift=-1, axis=1)  # Shift inputs
             input_sequence[0, -1, :] = input_at_start  # Assume no new input (can modify as needed)
 
-            last_time_value = time_sequence[-1]
-            print(last_time_value)
+            last_time_value = time_sequence[0, -1]
             time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
             time_sequence[0, -1] = last_time_value + 1  # Assume no new time increment (modify as needed)
 

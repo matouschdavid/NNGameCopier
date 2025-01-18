@@ -13,8 +13,8 @@ from tensorflow.keras.models import load_model
 from GameCaptcha.src.plot_utils import plot_prediction
 from GameCaptcha.src.vae import Sampling
 
-encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder.keras")
+encoder = load_model("models/vae_encoder_flappy.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/vae_decoder_flappy.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
@@ -39,12 +39,14 @@ sequence_length = 180
 latent_dim = latent_dim + input_dim
 lstm_inputs = keras.Input(shape=(sequence_length, latent_dim))
 x = layers.LSTM(128, return_sequences=True)(lstm_inputs)
+# x = layers.Bidirectional(layers.LSTM(128, return_sequences=True))(lstm_inputs)  # Bidirectional LSTM
 x = layers.Dropout(0.2)(x)
 x = layers.LSTM(64, return_sequences=False)(x)
+# x = layers.Bidirectional(layers.LSTM(64, return_sequences=False))(x)  # Bidirectional LSTM
 x = layers.Dropout(0.2)(x)
 lstm_outputs = layers.Dense(latent_dim)(x)
 lstm_model = Model(lstm_inputs, lstm_outputs, name="lstm_model")
-lstm_model.compile(optimizer=keras.optimizers.Adam(), loss="mse")
+lstm_model.compile(optimizer=keras.optimizers.Adam(), loss=keras.losses.BinaryCrossentropy(from_logits=True))
 
 chunk_size = 2000
 for k in range(5):
@@ -55,11 +57,10 @@ for k in range(5):
             X_chunk, y_chunk = create_sequences(chunk, sequence_length)
             lstm_model.fit(X_chunk, y_chunk, epochs=50, batch_size=96, validation_split=0.2)
 
-lstm_model.save("models/lstm_model.keras")
+lstm_model.save("models/lstm_model_flappy.keras")
 
 test_sequence = encode_frames(encoder, frames[:sequence_length], inputs[:sequence_length])
-jump = [1, 0]
-duck = [0, 1]
-nothing = [0, 0]
-plot_prediction(test_sequence, [jump, duck, nothing], 5, decoder, lstm_model)
+flap = [1]
+nothing = [0]
+plot_prediction(test_sequence, [flap, nothing], 5, decoder, lstm_model)
 

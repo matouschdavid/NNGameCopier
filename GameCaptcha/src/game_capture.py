@@ -90,7 +90,8 @@ def capture_screen():
 
 def one_hot_encode_input(keys):
     # [<space-bit>, <down-bit>]
-    output = [1 if "Key.space" in keys else 0, 1 if "Key.down" in keys else 0]
+    # output = [1 if "Key.space" in keys else 0, 1 if "Key.down" in keys else 0]
+    output = [1 if "Key.space" in keys else 0]
 
     return output
 

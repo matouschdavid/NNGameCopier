@@ -3,6 +3,9 @@ from PIL import Image
 import numpy as np
 import re
 
+from GameCaptcha.src.constants import NNGCConstants
+
+
 def load_data(image_folder, input_file, min=0, max=-1):
     images = []
     inputs = []
@@ -18,8 +21,8 @@ def load_data(image_folder, input_file, min=0, max=-1):
         if min == 0 or int(filename.split("_")[1]) >= min:
             # Load and normalize image
             image_path = os.path.join(image_folder, f"{filename}.png")
-            image = Image.open(image_path).convert("L")
-            image = image.resize((256, 64))  # Resize to desired dimensions
+            image = Image.open(image_path).convert(NNGCConstants.color_mode)
+            image = image.resize(NNGCConstants.compressed_image_size)  # Resize to desired dimensions
             image = np.array(image) / 255.0  # Normalize to [0, 1]
             image = np.expand_dims(image, axis=-1)  # Add channel dimension
 

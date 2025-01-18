@@ -92,7 +92,7 @@ decoder = load_model("models/decoder.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs, timestamps = load_data(image_folder, input_file, max=520) # load every frame, input and timestamp
+frames, inputs, timestamps = load_data(image_folder, input_file) # load every frame, input and timestamp
 input_shape, latent_shape = get_shapes(frames)
 input_dim = inputs.shape[-1]
 input_prominence = 3
@@ -103,7 +103,7 @@ lstm_model = build_combined_lstm(latent_shape, input_dim, input_prominence, time
 
 chunks = []
 chunk_size = 200
-for k in range(2):
+for k in range(1):
     for i in range(0, len(frames), chunk_size):
         if i + chunk_size > len(frames):
             rest_size = len(frames) - i
@@ -131,7 +131,7 @@ for fr, to in chunks:
         [latent_sequences, input_sequences, time_sequences],
         output_sequences,
         batch_size=32,
-        epochs=5,
+        epochs=50,
         validation_split=0.2
     )
     counter += 1

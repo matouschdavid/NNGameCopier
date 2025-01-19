@@ -1,3 +1,4 @@
+import config
 from keras import Model
 from keras.src.losses import BinaryCrossentropy
 
@@ -17,9 +18,9 @@ def custom_loss(y_true, y_pred):
 
     return mse_loss + regularization_term
 
-def build_autoencoder(input_shape, latent_height, latent_width, latent_channels):
-    encoder = build_encoder(input_shape, latent_channels)
-    decoder = build_decoder(latent_height, latent_width, latent_channels)
+def build_autoencoder(input_shape, latent_height, latent_width):
+    encoder = build_encoder(input_shape)
+    decoder = build_decoder(latent_height, latent_width)
 
     autoencoder = Model(encoder.input, decoder(encoder.output))
     autoencoder.compile(optimizer="adam", loss=BinaryCrossentropy(from_logits=False))

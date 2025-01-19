@@ -1,12 +1,15 @@
 import os
 from PIL import Image
+import config
 import numpy as np
 import re
 
-def load_data(image_folder, input_file, min=0, max=-1):
+def load_data(image_folder, min=0, max=-1):
     images = []
     inputs = []
     timestamps = []
+
+    input_file = f"{image_folder}/key_logs.txt"
 
     # Read input file
     with open(input_file, "r") as f:
@@ -19,7 +22,7 @@ def load_data(image_folder, input_file, min=0, max=-1):
             # Load and normalize image
             image_path = os.path.join(image_folder, f"{filename}.png")
             image = Image.open(image_path).convert("L")
-            image = image.resize((128, 96))  # Resize to desired dimensions
+            image = image.resize(config.compressed_frame_resolution)  # Resize to desired dimensions
             image = np.array(image) / 255.0  # Normalize to [0, 1]
             image = np.expand_dims(image, axis=-1)  # Add channel dimension
 

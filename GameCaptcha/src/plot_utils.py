@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import config
 import numpy as np
 
 
@@ -64,7 +65,7 @@ def plot_loss(history):
     plt.show()
 
 
-def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_predict, input_prominence, input_dim, time_dim, inputs_at_start, max_time):
+def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_predict, input_prominence, input_dim, inputs_at_start):
     """
     Predict a sequence of frames starting from the last `sequence_length` frames, inputs, and times.
     """
@@ -86,7 +87,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
             next_latent_space = lstm.predict([latent_space_buffer, input_sequence, time_sequence])
 
             # Decode the next latent space to reconstruct the frame
-            next_latent_space_cleaned = next_latent_space[:, :-(time_dim + input_dim)]  # Remove time from latent space
+            next_latent_space_cleaned = next_latent_space[:, :-(config.time_dim + input_dim)]  # Remove time from latent space
             height, width, channels = encoder.output.shape[1:]  # Latent shape from encoder output
             next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
 
@@ -105,7 +106,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
 
             last_time_value = time_sequence[0, -1]
             time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
-            time_sequence[0, -1] = last_time_value + 1/max_time  # Assume no new time increment (modify as needed)
+            time_sequence[0, -1] = last_time_value + 1/config.max_time  # Assume no new time increment (modify as needed)
 
     return predicted_frames
 

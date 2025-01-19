@@ -1,13 +1,12 @@
+import config
 from tensorflow.keras.models import load_model
 
 from io_utils import load_data
 from plot_utils import plot_reconstruction
 
-encoder = load_model("models/encoder.keras")
-decoder = load_model("models/decoder.keras")
+encoder = load_model(config.encoder_model_path)
+decoder = load_model(config.decoder_model_path)
 
-image_folder = "compressed_frames"
-input_file = "compressed_frames/key_logs.txt"
-frames, _, _ = load_data(image_folder, input_file, max=500)
+frames, _, _ = load_data(config.compressed_folder, max=500)
 
 plot_reconstruction(frames, encoder, decoder)

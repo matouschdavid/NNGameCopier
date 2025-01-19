@@ -1,7 +1,8 @@
+import config
 from keras import Model, layers
 
-def build_decoder(latent_height, latent_width, latent_channels):
-    inputs = layers.Input(shape=(latent_height, latent_width, latent_channels))
+def build_decoder(latent_height, latent_width):
+    inputs = layers.Input(shape=(latent_height, latent_width, config.latent_channels))
     x = layers.Conv2DTranspose(64, (3, 3), strides=(2, 2), padding="same")(inputs)
     x = layers.ReLU()(x)
     x = layers.Conv2DTranspose(32, (3, 3), strides=(2, 2), padding="same")(x)

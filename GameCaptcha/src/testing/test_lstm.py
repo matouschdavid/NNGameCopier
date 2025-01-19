@@ -20,7 +20,6 @@ for i in range(input_dim):
     input_at_start[i] = 1
     inputs_at_start.append(input_at_start)
 
-print(inputs_at_start)
 frames_to_predict = 5
 
 initial_frames = frames[-config.sequence_length:]

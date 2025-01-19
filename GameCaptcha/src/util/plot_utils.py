@@ -75,7 +75,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
 
 
     # Add batch and sequence dimensions
-    start_input_buffer = np.expand_dims(np.tile(inputs, (1, input_prominence)), axis=0)  # Repeat inputs for prominence
+    start_input_buffer = np.expand_dims(np.tile(inputs, input_prominence), axis=0)  # Repeat inputs for prominence
     start_time_buffer = np.expand_dims(times, axis=0)  # Add batch dimension
 
     # Step 3: Predict frames iteratively
@@ -125,7 +125,7 @@ def plot_frames(predicted_frames, frames_to_predict):
     num_frames = len(predicted_frames)
     plt.figure(figsize=(15, 5))
 
-    input_count = predicted_frames / frames_to_predict
+    input_count = int(len(predicted_frames) / frames_to_predict)
 
     for r in range(input_count):
         for c in range(frames_to_predict):

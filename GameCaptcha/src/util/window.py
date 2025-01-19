@@ -42,7 +42,7 @@ class Window:
 
         next_image = clean_image(next_image)
 
-        next_image_pil = Image.fromarray(next_image)
+        next_image_pil = Image.fromarray(next_image, mode=config.frame_channels)
         next_image_pil = next_image_pil.resize(config.output_frame_resolution)
         self.set_image(next_image_pil)
     

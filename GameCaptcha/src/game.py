@@ -5,9 +5,9 @@ from vae import Sampling
 from window import Window
 import threading
 
-encoder = load_model("models/vae_encoder.keras", custom_objects={"Sampling": Sampling})
-decoder = load_model("models/vae_decoder.keras")
-predictor = load_model("models/lstm_model.keras")
+encoder = load_model("models/encoder.keras", custom_objects={"Sampling": Sampling})
+decoder = load_model("models/decoder.keras")
+predictor = load_model("models/lstm.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"

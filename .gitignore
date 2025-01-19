@@ -164,4 +164,4 @@ cython_debug/
 #.idea/
 /GameCaptcha/src/compressed_frames/
 /GameCaptcha/src/captured_frames/
-/GameCaptcha/src/models_dino/
+/GameCaptcha/src/models/

@@ -11,8 +11,6 @@ from GameCaptcha.src.io_utils import load_data, LSTMImageDataGeneratorEager
 from tensorflow.keras.models import load_model
 
 
-
-
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
 
@@ -195,7 +193,7 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     decoder = load_model(decoder_path)
 
     # Create the model
-    model = create_bilstm_attention_model(
+    model = create_lstm_model(
         latent_dim=NNGCConstants.latent_dimension,
         num_actions=1
     )
@@ -222,6 +220,10 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
 
     # Save the model
     model.save(predictor_path)
+
+    from GameCaptcha.src.plot_utils import plot_loss
+
+    plot_loss(history)
 
     from GameCaptcha.src.plot_utils import plot_generated_sequence_flotschi_seqency
     # Plot multiple sequences to evaluate model performance

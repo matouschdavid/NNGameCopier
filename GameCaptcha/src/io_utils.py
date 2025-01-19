@@ -89,6 +89,56 @@ class ImageDataGenerator(keras.utils.Sequence):
 
         return X, y
 
+class ImageDataGeneratorEager(keras.utils.Sequence):
+    def __init__(self, image_folder, input_file, batch_size, min=0, max=-1):
+        self.image_folder = image_folder
+        self.batch_size = batch_size
+        self.min = min
+        self.max = max
+
+        # Read file paths once
+        with open(input_file, "r") as f:
+            self.lines = f.readlines()
+            if max > 0:
+                self.lines = self.lines[:max]
+
+        self.n_samples = len(self.lines)
+        self.indices = np.arange(self.n_samples)
+
+        # Pre-load all images
+        self.images = self._load_all_images()
+
+    def _load_all_images(self):
+        """Load all images into memory during initialization"""
+        images = []
+        for line in self.lines:
+            filename, _, _ = extract_data_from_line(line.strip())
+            image_path = os.path.join(self.image_folder, f"{filename}.png")
+
+            # Load and preprocess image
+            image = Image.open(image_path).convert(NNGCConstants.color_mode)
+            image = image.resize(NNGCConstants.compressed_image_size)
+            image = np.array(image) / 255.0
+            image = np.expand_dims(image, axis=-1)
+
+            images.append(image)
+
+        return np.array(images)
+
+    def __len__(self):
+        return int(np.ceil(self.n_samples / self.batch_size))
+
+    def on_epoch_end(self):
+        np.random.shuffle(self.indices)
+
+    def __getitem__(self, idx):
+        batch_indices = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
+
+        # Simply index into pre-loaded images
+        batch_images = self.images[batch_indices]
+
+        return batch_images, batch_images
+
 class LSTMImageDataGeneratorEager(keras.utils.Sequence):
     def __init__(self, image_folder, input_file, batch_size, sequence_length, encoder, min=0, max=-1):
         # super().__init__([], {})

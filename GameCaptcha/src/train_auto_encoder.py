@@ -1,5 +1,5 @@
 from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data, ImageDataGenerator
+from GameCaptcha.src.io_utils import load_data, ImageDataGeneratorEager, ImageDataGenerator
 from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
 import numpy as np
 import tensorflow as tf

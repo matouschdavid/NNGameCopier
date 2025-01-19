@@ -107,11 +107,11 @@ class Window:
         self.root.quit()
 
 def main():
-    postfix = "_flappy_128"
+    postfix = "_flappy_64"
 
     encoder_path = f"models/vae_encoder{postfix}.keras"
     decoder_path = f"models/vae_decoder{postfix}.keras"
-    predictor_path = f"models/bilstm_50_model{postfix}.keras"
+    predictor_path = f"models/lstm_50_longo_model{postfix}.keras"
 
     # Load models and data
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
@@ -130,7 +130,7 @@ def main():
     initial_encoded = initial_encoded.numpy()
 
     # Start the application
-    frame_rate = 20
+    frame_rate = 60
     app = Window()
 
     # Initialize sequences

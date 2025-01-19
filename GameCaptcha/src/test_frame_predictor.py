@@ -10,7 +10,7 @@ from GameCaptcha.src.vae import Sampling
 
 
 
-postfix = "_flappy_128"
+postfix = "_flappy_64"
 
 encoder_path = f"models/vae_encoder{postfix}.keras"
 decoder_path = f"models/vae_decoder{postfix}.keras"

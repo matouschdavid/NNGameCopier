@@ -1,11 +1,11 @@
 from GameCaptcha.src.train_auto_encoder import train_vae_main
 from GameCaptcha.src.train_frame_predictor import train_prediction_main
 
-postfix = "_flappy_128"
+postfix = "_flappy_64"
 
 encoder_path = f"models/vae_encoder{postfix}.keras"
 decoder_path = f"models/vae_decoder{postfix}.keras"
-predictor_path = f"models/bilstm_50_model{postfix}.keras"
+predictor_path = f"models/lstm_50_longo_model{postfix}.keras"
 
 
 def train_all():

@@ -15,15 +15,26 @@ def prepare_sequences(encoder, frames, inputs, timestamps, sequence_length):
     time_sequences = []
     output_sequences = []
 
-    latent_cache = {}
+    latent_cache = {}  # Initialize the cache for individual frames
+
+    def get_latent_cached(frame):
+        """Retrieve or compute the latent representation for a single frame."""
+        frame_key = hash(frame.tobytes())
+        if frame_key not in latent_cache:
+            # Expand dimensions of the frame to simulate a batch with a single frame
+            frame_expanded = np.expand_dims(frame, axis=0)  # Shape: (1, height, width, channels)
+            # Compute the latent representation and cache it
+            latent_cache[frame_key] = encoder.predict(frame_expanded)[0]  # Remove batch dimension after prediction
+        return latent_cache[frame_key]  # Shape: (latent_height, latent_width, latent_channels)
 
     for i in range(len(frames) - sequence_length):
         frame_seq = frames[i:i + sequence_length]
         input_seq = inputs[i:i + sequence_length]
         time_seq = timestamps[i:i + sequence_length]
 
-        # try getting values from cache
-        latent_seq = get_latent_representations(encoder, frame_seq)
+        # Retrieve latent representations for the sliding window
+        latent_seq = np.stack([get_latent_cached(frame) for frame in frame_seq])  # Shape: (sequence_length, latent_height, latent_width, latent_channels)
+        #print(latent_seq.shape)
 
         latent_sequences.append(latent_seq)
         input_sequences.append(input_seq)
@@ -31,8 +42,7 @@ def prepare_sequences(encoder, frames, inputs, timestamps, sequence_length):
 
         predict_frame = frames[i + sequence_length]
         height, width, channels = predict_frame.shape
-        predict_frame = predict_frame.reshape(-1, height, width,
-                                              channels)
+        predict_frame = predict_frame.reshape(-1, height, width, channels)
 
         encoder_part = encoder.predict(predict_frame).flatten()
         encoder_part = np.expand_dims(encoder_part, -1)
@@ -47,13 +57,16 @@ def prepare_sequences(encoder, frames, inputs, timestamps, sequence_length):
         output_seq = np.concatenate([encoder_part, input_part, time_part], axis=0)
         output_sequences.append(output_seq)
 
-        # cache all the latent_seq values
-
     # Convert to numpy arrays
-    latent_sequences = np.array(latent_sequences)
-    input_sequences = np.array(input_sequences)
-    time_sequences = np.array(time_sequences)
-    output_sequences = np.array(output_sequences)
+    latent_sequences = np.array(latent_sequences)  # Shape: (batch_size, sequence_length, height, width, channels)
+    input_sequences = np.array(input_sequences)  # Shape: (batch_size, sequence_length, input_dim)
+    time_sequences = np.array(time_sequences)  # Shape: (batch_size, sequence_length, time_dim)
+    output_sequences = np.array(output_sequences)  # Shape: (batch_size, output_dim)
+
+    print("Shape of latent sequences: ", latent_sequences.shape)
+    print("Shape of input sequences: ", input_sequences.shape)
+    print("Shape of time sequences: ", time_sequences.shape)
+    print("Shape of output sequences: ", output_sequences.shape)
 
     return latent_sequences, input_sequences, time_sequences, output_sequences
 
@@ -95,16 +108,19 @@ decoder = load_model("models/decoder.keras")
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
 frames, inputs, timestamps = load_data(image_folder, input_file) # load every frame, input and timestamp
+max_time = max(timestamps)
+print("Max time of dataset", max_time)
+timestamps = timestamps / max_time
 input_shape, latent_shape = get_shapes(frames)
 input_dim = inputs.shape[-1]
 input_prominence = 3
 time_dim = 1
 sequence_length = 120
+chunks = []
+chunk_size = 1000
 
 lstm_model = build_combined_lstm(latent_shape, input_dim, input_prominence, time_dim, sequence_length)
 
-chunks = []
-chunk_size = 200
 for k in range(1):
     for i in range(0, len(frames), chunk_size):
         if i + chunk_size > len(frames):

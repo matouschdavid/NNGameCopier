@@ -7,9 +7,14 @@ from pynput import keyboard
 from game_capture import one_hot_encode_input
 from game_utils import predict_next_frame, update_latent_space_buffer, clean_image
 from plot_utils import plot_frame
+import numpy as np
 
 
 class Window:
+    encoder_part = None
+    input_part = None
+    time_part = None
+
     def __init__(self, window_title="NNGameCopier"):
         # Create the main window
         self.root = Tk()
@@ -31,20 +36,34 @@ class Window:
         self.image_label.config(image=self.current_image)
         self.image_label.image = self.current_image  # Keep a reference
 
-    def update(self, latent_space_buffer, decoder, predictor, input_vector, max_time, input_prominence, time_dim, resolution):
+    def update(self, decoder, predictor, input_vector, max_time, input_prominence, time_dim, resolution, latent_shape):
         """Updates the window with the predicted frames."""
-        next_image, next_latent_space = predict_next_frame(decoder, predictor, latent_space_buffer, max_time, input_vector, input_prominence, time_dim, bot=False)
-        latent_space_buffer = update_latent_space_buffer(latent_space_buffer, next_latent_space)
+        next_image, new_encoder_element, new_input_element, new_time_element = predict_next_frame(decoder, predictor, self.encoder_part, self.input_part, self.time_part, max_time, input_vector, input_prominence, time_dim, latent_shape, bot=False)
+        self.update_buffers(new_encoder_element, new_input_element, new_time_element)
 
         next_image = clean_image(next_image)
 
         next_image_pil = Image.fromarray(next_image)
         next_image_pil = next_image_pil.resize(resolution)
         self.set_image(next_image_pil)
+    
+    def update_buffers(self, new_encoder_element, new_input_element, new_time_element):
+        self.update_buffer(self.encoder_part, new_encoder_element)
+        self.update_buffer(self.input_part, new_input_element)
+        self.update_buffer(self.time_part, new_time_element)
+    
+    def update_buffer(self, buffer, new_element):
+        # Roll the buffer to the left (remove the first element)
+        buffer = np.roll(buffer, shift=-1, axis=0)
+        # Add the new latent space at the end of the buffer
+        buffer[-1] = new_element
+        return buffer
 
-        return latent_space_buffer
+    def start_prediction_loop(self, encoder_part, input_part, time_part, decoder, predictor, input_dim, target_frame_rate, max_time, input_prominence, time_dim, resolution, latent_shape):
+        self.encoder_part = encoder_part
+        self.input_part = input_part
+        self.time_part = time_part
 
-    def start_prediction_loop(self, latent_space_buffer, decoder, predictor, input_dim, target_frame_rate, max_time, input_prominence, time_dim, resolution):
         """Run the prediction loop in a separate thread."""
         delta_time = 1 / target_frame_rate
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
@@ -52,7 +71,7 @@ class Window:
         while self.running:
             start_time = time.time()
             self.input_vector = one_hot_encode_input(self.current_keys)
-            latent_space_buffer = self.update(latent_space_buffer, decoder, predictor, self.input_vector, max_time, input_prominence, time_dim, resolution)
+            self.update(decoder, predictor, self.input_vector, max_time, input_prominence, time_dim, resolution, latent_shape)
             time_diff = time.time() - start_time
 
             if time_diff < delta_time:

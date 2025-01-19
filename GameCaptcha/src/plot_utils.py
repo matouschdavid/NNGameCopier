@@ -64,34 +64,7 @@ def plot_loss(history):
     plt.show()
 
 
-def predict_next_frame(encoder, decoder, lstm, latent_space_buffer, input_vector, time_value, input_prominence, time_dim):
-    """
-    Predict the next frame using the LSTM and decode it back to an image.
-    """
-    # Ensure input_vector has the correct shape
-    input_vector = np.expand_dims(np.tile(input_vector, input_prominence), axis=0)  # Add batch dimension and repeat
-    input_vector = np.expand_dims(input_vector, axis=1)  # Add time dimension (sequence_length = 1)
-
-    # Normalize the time value
-    time_value = np.expand_dims(np.expand_dims(time_value, axis=0), axis=1)  # Batch and time dimensions
-
-    # Predict the next latent space
-    next_latent_space = lstm.predict([latent_space_buffer, input_vector, time_value])
-
-    # Remove input and time from latent space
-    latent_space_cleaned = next_latent_space[:, :-time_dim]
-
-    # Reshape to match latent shape for the decoder
-    height, width, channels = encoder.output.shape[1:]  # Extract latent shape from encoder output
-    latent_space_cleaned = latent_space_cleaned.reshape((-1, height, width, channels))
-
-    # Decode the latent space to get the predicted frame
-    next_frame = decoder.predict(latent_space_cleaned)
-
-    return next_frame, latent_space_cleaned
-
-
-def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_predict, input_prominence, input_dim, time_dim, inputs_at_start):
+def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_predict, input_prominence, input_dim, time_dim, inputs_at_start, max_time):
     """
     Predict a sequence of frames starting from the last `sequence_length` frames, inputs, and times.
     """
@@ -132,7 +105,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
 
             last_time_value = time_sequence[0, -1]
             time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
-            time_sequence[0, -1] = last_time_value + 1  # Assume no new time increment (modify as needed)
+            time_sequence[0, -1] = last_time_value + 1/max_time  # Assume no new time increment (modify as needed)
 
     return predicted_frames
 

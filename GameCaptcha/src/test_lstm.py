@@ -4,6 +4,7 @@ from io_utils import load_data
 from networks_builders.shape_helper import get_shapes
 
 from plot_utils import predict_sequence, plot_frames
+import numpy as np
 
 encoder = load_model("models/encoder.keras")
 decoder = load_model("models/decoder.keras")
@@ -11,7 +12,9 @@ lstm_model = load_model("models/lstm.keras")
 
 image_folder = "compressed_frames"
 input_file = "compressed_frames/key_logs.txt"
-frames, inputs, timestamps = load_data(image_folder, input_file, max=200)
+frames, inputs, timestamps = load_data(image_folder, input_file, max=1121)
+max_time = 5898
+timestamps = timestamps / max_time # max time of whole dataset
 input_shape, latent_shape = get_shapes(frames)
 input_dim = inputs.shape[-1]
 input_prominence = 3
@@ -26,12 +29,13 @@ nothing = [0, 0, 0, 0]
 inputs_at_start = [up, down, left, right, nothing]
 frames_to_predict = 5
 
-initial_frames = frames[:sequence_length]
-input_vectors = inputs[:sequence_length]
-time_values = timestamps[:sequence_length]
+initial_frames = frames[-sequence_length:]
+plot_frames(initial_frames)
+input_vectors = inputs[-sequence_length:]
+time_values = timestamps[-sequence_length:]
 
 predicted_frames = predict_sequence(
-    encoder, decoder, lstm_model, initial_frames, input_vectors, time_values, frames_to_predict, 1, input_dim, time_dim, inputs_at_start
+    encoder, decoder, lstm_model, initial_frames, input_vectors, time_values, frames_to_predict, 1, input_dim, time_dim, inputs_at_start, max_time
 ) # todo add prominence
 
 # Visualize the predicted frames

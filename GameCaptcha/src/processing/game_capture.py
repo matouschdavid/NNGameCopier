@@ -19,7 +19,7 @@ start_x = 0
 start_y = 0
 
 # Folder to save screenshots
-output_folder = "captured_frames"
+output_folder = config.captured_folder
 os.makedirs(output_folder, exist_ok=True)
 
 # Dictionary to store key logs for each frame

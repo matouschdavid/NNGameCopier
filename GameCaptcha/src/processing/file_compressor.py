@@ -3,7 +3,7 @@ import shutil
 from PIL import Image
 
 import GameCaptcha.src.config as config
-from io_utils import extract_data_from_line
+from GameCaptcha.src.util.io_utils import extract_data_from_line
 
 
 # Load Frames and Inputs
@@ -11,7 +11,7 @@ def compress_data():
     input_file = f"{config.captured_folder}/key_logs.txt"
 
     os.makedirs(config.compressed_folder, exist_ok=True)
-    shutil.copy(input_file, os.path.join(config.compressed_folder, os.path.basename(config.input_file)))
+    shutil.copy(input_file, os.path.join(config.compressed_folder, os.path.basename(input_file)))
     # Read input file
     with open(input_file, "r") as f:
         lines = f.readlines()

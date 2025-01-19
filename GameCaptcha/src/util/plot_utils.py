@@ -71,17 +71,21 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
     """
     # Step 1: Initialize the latent space buffer
     # Encode the last `sequence_length` frames to latent space
-    latent_space_buffer = np.expand_dims(encoder.predict(frames), axis=0)  # Add batch dimension
+    start_encoder_buffer = np.expand_dims(encoder.predict(frames), axis=0)  # Add batch dimension
 
 
     # Add batch and sequence dimensions
-    input_sequence = np.expand_dims(np.tile(inputs, (1, input_prominence)), axis=0)  # Repeat inputs for prominence
-    time_sequence = np.expand_dims(times, axis=0)  # Add batch dimension
+    start_input_buffer = np.expand_dims(np.tile(inputs, (1, input_prominence)), axis=0)  # Repeat inputs for prominence
+    start_time_buffer = np.expand_dims(times, axis=0)  # Add batch dimension
 
     # Step 3: Predict frames iteratively
     predicted_frames = []
 
     for input_at_start in inputs_at_start:
+        latent_space_buffer = start_encoder_buffer
+        input_sequence = start_input_buffer
+        time_sequence = start_time_buffer
+
         for _ in range(frames_to_predict):
             # Predict the next latent space
             next_latent_space = lstm.predict([latent_space_buffer, input_sequence, time_sequence])
@@ -111,7 +115,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
     return predicted_frames
 
 
-def plot_frames(predicted_frames):
+def plot_frames(predicted_frames, frames_to_predict):
     """
     Plots a sequence of predicted frames.
 
@@ -121,11 +125,16 @@ def plot_frames(predicted_frames):
     num_frames = len(predicted_frames)
     plt.figure(figsize=(15, 5))
 
-    for i, frame in enumerate(predicted_frames):
-        plt.subplot(1, num_frames, i + 1)
-        plt.imshow(frame.squeeze(), cmap="gray")  # Assumes grayscale images
-        plt.axis("off")
-        plt.title(f"Frame {i + 1}")
+    input_count = predicted_frames / frames_to_predict
+
+    for r in range(input_count):
+        for c in range(frames_to_predict):
+            plt.subplot(input_count, frames_to_predict, r * frames_to_predict + c + 1)
+
+            frame = predicted_frames[r * frames_to_predict + c]
+            plt.imshow(frame.squeeze(), cmap="gray")
+            plt.axis("off")
+            plt.title(f"Frame {c + 1}")
 
     plt.tight_layout()
     plt.show()

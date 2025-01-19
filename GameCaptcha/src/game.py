@@ -8,7 +8,7 @@ from collections import deque
 
 from GameCaptcha.src.constants import NNGCConstants
 from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.train_frame_predictor_v3 import predict_next_frame, PositionalEncoding
+from GameCaptcha.src.train_frame_predictor import predict_next_frame, PositionalEncoding
 from GameCaptcha.src.vae import Sampling
 
 frame_with = NNGCConstants.compressed_image_size[0]
@@ -107,11 +107,11 @@ class Window:
         self.root.quit()
 
 def main():
-    postfix = "_flappy_512"
+    postfix = "_flappy_128"
 
     encoder_path = f"models/vae_encoder{postfix}.keras"
     decoder_path = f"models/vae_decoder{postfix}.keras"
-    predictor_path = f"models/lstm_model{postfix}.keras"
+    predictor_path = f"models/bilstm_50_model{postfix}.keras"
 
     # Load models and data
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
@@ -123,8 +123,9 @@ def main():
     input_file = "compressed_frames/key_logs.txt"
     frames, inputs, _ = load_data(image_folder, input_file)
 
+    entrypoint = 170
     # Get initial encoded frames
-    initial_frames = frames[:SEQUENCE_LENGTH]
+    initial_frames = frames[entrypoint:(SEQUENCE_LENGTH+entrypoint)]
     _, _, initial_encoded = encoder(initial_frames)
     initial_encoded = initial_encoded.numpy()
 

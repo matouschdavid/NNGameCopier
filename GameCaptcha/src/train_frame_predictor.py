@@ -7,7 +7,7 @@ from tensorflow.keras.layers import SimpleRNN, Dense, Input, LSTM, Dropout, Batc
 import matplotlib.pyplot as plt
 
 from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data
+from GameCaptcha.src.io_utils import load_data, LSTMImageDataGeneratorEager
 from tensorflow.keras.models import load_model
 
 
@@ -195,26 +195,43 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     decoder = load_model(decoder_path)
 
     # Create the model
-    model = create_transformer_model(
+    model = create_bilstm_attention_model(
         latent_dim=NNGCConstants.latent_dimension,
         num_actions=1
     )
 
-    frames, inputs, _ = load_data(image_folder, input_file)
-    _, _, encoded_frames = encoder(frames)
-    encoded_frames = encoded_frames.numpy()
+    # frames, inputs, _ = load_data(image_folder, input_file)
+    # _, _, encoded_frames = encoder(frames)
+    # encoded_frames = encoded_frames.numpy()
 
-    train_model(model, encoded_frames, inputs, epochs=epochs, batch_size=batch_size)
+    # train_model(model, encoded_frames, inputs, epochs=epochs, batch_size=batch_size)
+
+    train_generator = LSTMImageDataGeneratorEager(
+        image_folder=image_folder,
+        input_file=input_file,
+        batch_size=batch_size,
+        sequence_length=NNGCConstants.sequence_length,
+        encoder=encoder
+    )
+
+    history = model.fit(
+        train_generator,
+        epochs=epochs,
+        batch_size=batch_size
+    )
+
+    # Save the model
+    model.save(predictor_path)
 
     from GameCaptcha.src.plot_utils import plot_generated_sequence_flotschi_seqency
     # Plot multiple sequences to evaluate model performance
     print("Generating multiple sequences...")
+    sample_frames, sample_inputs, _ = load_data(image_folder, input_file, max=1500)
     for i in range(3):
         print(f"\nSequence {i+1}:")
-        plot_generated_sequence_flotschi_seqency(model, encoder, decoder, frames, inputs, 5)
+        plot_generated_sequence_flotschi_seqency(model, encoder, decoder, sample_frames, sample_inputs, 5)
 
-    # Save the model
-    model.save(predictor_path)
+    train_generator.clear_cache()
 
 
 if __name__ == '__main__':

@@ -29,6 +29,8 @@ class VAE(keras.Model):
 
     def train_step(self, data):
         data = tf.squeeze(data, axis=-1)
+        data = data[-1]
+
 
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)

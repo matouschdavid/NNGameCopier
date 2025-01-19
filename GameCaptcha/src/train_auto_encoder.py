@@ -1,5 +1,5 @@
 from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data
+from GameCaptcha.src.io_utils import load_data, ImageDataGenerator
 from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
 import numpy as np
 import tensorflow as tf
@@ -12,13 +12,19 @@ from GameCaptcha.src.vae import Sampling, VAE
 def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
     image_folder = "compressed_frames"
     input_file = "compressed_frames/key_logs.txt"
-    frames, _, _ = load_data(image_folder, input_file)
 
-    input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
+    (input_width, input_height) = NNGCConstants.compressed_image_size
+    input_channels = 1 if NNGCConstants.color_mode == 'L' else 3
 
-    # latent_dim = int(0.05 * input_height * input_width * input_channels)
     latent_dim = NNGCConstants.latent_dimension
     print(f"Latent Dimension: {latent_dim}")
+
+    # Create data generator
+    train_generator = ImageDataGenerator(
+        image_folder=image_folder,
+        input_file=input_file,
+        batch_size=batch_size
+    )
 
     encoder_inputs = keras.Input(shape=(input_height, input_width, input_channels))
     x = layers.Conv2D(16, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
@@ -49,10 +55,18 @@ def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
 
     vae = VAE(encoder, decoder)
     vae.compile(optimizer=keras.optimizers.Adam())
-    history = vae.fit(frames, epochs=epochs, batch_size=batch_size)
+
+    history = vae.fit(
+        train_generator,
+        epochs=epochs,
+        steps_per_epoch=len(train_generator)
+    )
+
     print("Done training")
     plot_loss(history)
-    plot_reconstruction(frames, vae)
+
+    sample_batch = next(iter(train_generator))[0]
+    plot_reconstruction(sample_batch, vae)
 
     vae.encoder.save(encoder_path)
     vae.decoder.save(decoder_path)

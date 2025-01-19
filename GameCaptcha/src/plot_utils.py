@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.train_frame_predictor_v3 import predict_next_frame
+from GameCaptcha.src.train_frame_predictor import predict_next_frame
 
 
 def plot_reconstruction(frames, vae, size=10):

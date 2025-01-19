@@ -45,7 +45,7 @@ def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
     x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2DTranspose(16, 3, activation="relu", strides=2, padding="same")(x)
-    decoder_outputs = layers.Conv2DTranspose(3, 3, activation="tanh", padding="same")(x)
+    decoder_outputs = layers.Conv2DTranspose(input_channels, 3, activation="tanh", padding="same")(x)
     decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
     decoder.summary()

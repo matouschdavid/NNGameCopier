@@ -28,7 +28,7 @@ class VAE(keras.Model):
         self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
 
     def train_step(self, data):
-        data = tf.squeeze(data, axis=-1)
+        # data = tf.squeeze(data, axis=-1)
         data = data[-1]
 
 

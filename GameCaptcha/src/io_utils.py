@@ -26,7 +26,9 @@ def load_data(image_folder, input_file, min=0, max=-1):
             image = Image.open(image_path).convert(NNGCConstants.color_mode)
             image = image.resize(NNGCConstants.compressed_image_size)  # Resize to desired dimensions
             image = np.array(image) / 255.0  # Normalize to [0, 1]
-            image = np.expand_dims(image, axis=-1)  # Add channel dimension
+
+            if NNGCConstants.color_mode == "L":
+                image = np.expand_dims(image, axis=-1)
 
             images.append(image)
             inputs.append(input_vector)
@@ -81,7 +83,9 @@ class ImageDataGenerator(keras.utils.Sequence):
             image = Image.open(image_path).convert(NNGCConstants.color_mode)
             image = image.resize(NNGCConstants.compressed_image_size)
             image = np.array(image) / 255.0
-            image = np.expand_dims(image, axis=-1)
+
+            if NNGCConstants.color_mode == "L":
+                image = np.expand_dims(image, axis=-1)
 
             batch_images.append(image)
 
@@ -119,7 +123,8 @@ class ImageDataGeneratorEager(keras.utils.Sequence):
             image = Image.open(image_path).convert(NNGCConstants.color_mode)
             image = image.resize(NNGCConstants.compressed_image_size)
             image = np.array(image) / 255.0
-            image = np.expand_dims(image, axis=-1)
+            if NNGCConstants.color_mode == "L":
+                image = np.expand_dims(image, axis=-1)
 
             images.append(image)
 
@@ -187,6 +192,9 @@ class LSTMImageDataGeneratorEager(keras.utils.Sequence):
                 image = image.resize(NNGCConstants.compressed_image_size)
                 image = np.array(image) / 255.0
                 image = np.expand_dims(image, axis=0)
+                if NNGCConstants.color_mode == "L":
+                    image = np.expand_dims(image, axis=-1)
+
                 batch_images.append(image)
 
             # Encode batch

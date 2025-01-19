@@ -193,9 +193,9 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     decoder = load_model(decoder_path)
 
     # Create the model
-    model = create_transformer_model(
+    model = create_bilstm_attention_model(
         latent_dim=NNGCConstants.latent_dimension,
-        num_actions=1
+        num_actions=NNGCConstants.action_count
     )
 
     # frames, inputs, _ = load_data(image_folder, input_file)

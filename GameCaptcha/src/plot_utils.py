@@ -14,14 +14,18 @@ def plot_reconstruction(frames, vae, size=10):
     plt.figure(figsize=(size*2, 2))
     for i in range(size):
         plt.subplot(2, size, i + 1)
-        # plt.imshow(sample_frames[i])
-        plt.imshow(np.squeeze(sample_frames[i], axis=-1))
+        if NNGCConstants.color_mode == "L":
+            plt.imshow(sample_frames[i], cmap='gray')
+        else:
+            plt.imshow(sample_frames[i])
         plt.axis("off")
         plt.title("Original")
 
         plt.subplot(2, size, i + 1 + size)
-        # plt.imshow(reconstructed_frames[i].numpy())
-        plt.imshow(reconstructed_frames[i].numpy())
+        if NNGCConstants.color_mode == "L":
+            plt.imshow(reconstructed_frames[i].numpy(), cmap='gray')
+        else:
+            plt.imshow(reconstructed_frames[i].numpy())
         plt.axis("off")
         plt.title("Reconstructed")
 
@@ -105,7 +109,10 @@ def plot_generated_sequence(lstm_model, encoder, decoder, frames, inputs, num_fr
 
     # Plot frames
     for i, frame in enumerate(generated_frames):
-        axes[i].imshow(np.squeeze(frame))
+        if NNGCConstants.color_mode == "L":
+            axes[i].imshow(np.squeeze(frame), cmap='gray')
+        else:
+            axes[i].imshow(np.squeeze(frame))
         axes[i].axis('off')
 
         if i == 0:

@@ -3,10 +3,11 @@ import dataclasses
 
 @dataclasses.dataclass(frozen=True)
 class NNGCConstants:
-    compressed_image_size=(368, 288)
-    color_mode="RGB"
+    compressed_image_size=(256, 48)
+    color_mode="L"
     latent_dimension=64
     action_weight = 1
+    action_count = 2
 
 
     # sequence_length = 400

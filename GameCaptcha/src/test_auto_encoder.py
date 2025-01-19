@@ -3,7 +3,7 @@ from GameCaptcha.src.io_utils import load_data
 from GameCaptcha.src.plot_utils import plot_reconstruction
 from GameCaptcha.src.vae import Sampling, VAE
 
-postfix = "_flappy_64"
+postfix = "_dino_64"
 
 encoder_path = f"models/vae_encoder{postfix}.keras"
 decoder_path = f"models/vae_decoder{postfix}.keras"

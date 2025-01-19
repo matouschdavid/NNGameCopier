@@ -25,7 +25,7 @@ class Window:
         self.canvas.pack()
 
         # Initialize key press state
-        self.key_pressed = 0
+        self.input_vector = [0, 0] # 2 Elements because my framework only supports space and down
         self.running = True
 
         # Initialize sequences
@@ -36,18 +36,30 @@ class Window:
         self.root.bind('<space>', self.on_space_press)
         self.root.bind('<KeyRelease-space>', self.on_space_release)
 
+
+        # Bind keyboard events
+        self.root.bind('<Down>', self.on_down_press)
+        self.root.bind('<KeyRelease-Down>', self.on_down_release)
+
         # Initialize image display
         self.image_on_canvas = None
 
     def on_space_press(self, event):
-        self.key_pressed = 1
+        self.input_vector[0] = 1
 
     def on_space_release(self, event):
-        self.key_pressed = 0
+        self.input_vector[0] = 0
+
+    def on_down_press(self, event):
+        self.input_vector[1] = 1
+
+    def on_down_release(self, event):
+        self.input_vector[1] = 0
 
     def update_frame(self, frame):
         # Convert numpy array to PhotoImage
-        image = Image.fromarray((frame * 255).astype(np.uint8))
+        frame = np.squeeze(frame, axis=-1)
+        image = Image.fromarray((frame * 255).astype(np.uint8), mode=NNGCConstants.color_mode)
         photo = ImageTk.PhotoImage(image)
 
         # Update canvas
@@ -66,7 +78,7 @@ class Window:
 
         # Initialize action_sequence with zeros
         for _ in range(SEQUENCE_LENGTH):
-            self.action_sequence.append(0)
+            self.action_sequence.append([0, 0])
 
     def start_prediction_loop(self, decoder, predictor, frame_rate):
         while self.running:
@@ -74,7 +86,7 @@ class Window:
 
             # Convert sequences to numpy arrays
             encoded_array = np.array(list(self.encoded_sequence))
-            action_array = np.array([[action] for action in list(self.action_sequence)])
+            action_array = np.array([action[:NNGCConstants.action_count] for action in list(self.action_sequence)]) # slice the input_vector for model
 
             # Predict next frame
             next_encoded = predict_next_frame(
@@ -91,7 +103,7 @@ class Window:
 
             # Update sequences
             self.encoded_sequence.append(next_encoded)
-            self.action_sequence.append(self.key_pressed)
+            self.action_sequence.append(self.input_vector)
 
             # Maintain frame rate
             elapsed_time = time.time() - start_time
@@ -107,11 +119,11 @@ class Window:
         self.root.quit()
 
 def main():
-    postfix = "_flappy_64"
+    postfix = "_dino_64"
 
     encoder_path = f"models/vae_encoder{postfix}.keras"
     decoder_path = f"models/vae_decoder{postfix}.keras"
-    predictor_path = f"models/transformer_30_100_model{postfix}.keras"
+    predictor_path = f"models/bilstm_model{postfix}.keras"
 
     # Load models and data
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
@@ -139,9 +151,7 @@ def main():
     # Start prediction thread
     prediction_thread = threading.Thread(
         target=app.start_prediction_loop,
-        args=(decoder, predictor, frame_rate
-
-              )
+        args=(decoder, predictor, frame_rate)
     )
     prediction_thread.daemon = True
     prediction_thread.start()

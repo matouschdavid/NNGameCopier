@@ -8,7 +8,7 @@ from GameCaptcha.src.util.io_utils import load_data
 encoder = load_model(config.encoder_model_path)
 decoder = load_model(config.decoder_model_path)
 
-frames, inputs, timestamps = load_data(config.compressed_folder) # load every frame, input and timestamp
+frames, inputs, timestamps = load_data(config.compressed_folder, max=2000) # load every frame, input and timestamp
 max_time = max(timestamps)
 print("Max time of dataset", max_time)
 timestamps = timestamps / max_time
@@ -39,13 +39,12 @@ for fr, to in chunks:
     timestamps_chunk = timestamps[fr:to]
     print(f"({counter} / {len(chunks)})")
     latent_sequences, input_sequences, time_sequences, output_sequences = prepare_sequences(encoder, frames_chunk, inputs_chunk, timestamps_chunk)
-    print(latent_sequences.shape, input_sequences.shape, time_sequences.shape, output_sequences.shape)
     # Train the LSTM
     history = lstm_model.fit(
         [latent_sequences, input_sequences, time_sequences],
         output_sequences,
         batch_size=32,
-        epochs=50,
+        epochs=30,
         validation_split=0.2
     )
     counter += 1

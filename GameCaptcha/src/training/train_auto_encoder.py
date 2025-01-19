@@ -3,7 +3,7 @@ from GameCaptcha.src.networks_builders.auto_encoder import build_autoencoder
 from GameCaptcha.src.util.io_utils import load_data
 from GameCaptcha.src.util.plot_utils import plot_loss, plot_reconstruction
 
-frames, _, _ = load_data(config.compressed_folder)
+frames, _, _ = load_data(config.compressed_folder, max=2000)
 
 input_height, input_width, input_channels = frames.shape[1], frames.shape[2], frames.shape[3]
 input_shape = (input_height, input_width, input_channels)

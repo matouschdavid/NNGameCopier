@@ -18,7 +18,7 @@ def custom_loss(y_true, y_pred):
 
 def build_autoencoder(input_shape, latent_height, latent_width):
     encoder = build_encoder(input_shape)
-    decoder = build_decoder(latent_height, latent_width)
+    decoder = build_decoder(latent_height, latent_width, input_shape[-1])
 
     autoencoder = Model(encoder.input, decoder(encoder.output))
     autoencoder.compile(optimizer="adam", loss=BinaryCrossentropy(from_logits=False))

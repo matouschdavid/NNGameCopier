@@ -7,6 +7,7 @@ os.environ['HSA_OVERRIDE_GFX_VERSION']="11.0.0"
 input_keys = ["Key.space", "Key.down"]
 
 compressed_frame_resolution = (256, 48)
+frame_channels = "L"
 output_frame_resolution = (1024, 256)
 downscale_factor = 16
 latent_channels = 64
@@ -29,11 +30,12 @@ decoder_model_path = "models_dino/decoder.keras"
 # input_keys = ["Key.up", "Key.down", "Key.left", "Key.right"]
 #
 # compressed_frame_resolution = (128, 96)
+# frame_channels = "RGB"
 # output_frame_resolution = (1024, 256)
 # downscale_factor = 16
 # latent_channels = 64
 # latent_shape = (int(compressed_frame_resolution[1] / downscale_factor), int(compressed_frame_resolution[0] / downscale_factor), latent_channels)
-# max_time = 5800
+# max_time = 514
 # input_prominence = 1
 # time_dim = 1
 # sequence_length = 120

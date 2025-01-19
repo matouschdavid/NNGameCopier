@@ -30,7 +30,7 @@ def clean_image(image):
     image = (image.numpy() * 255).astype(np.uint8)
 
     image = np.squeeze(image, axis=0)  # Remove batch dimension
-    image = np.squeeze(image, axis=-1)  # Remove channel dimension
+    # image = np.squeeze(image, axis=-1)  # Remove channel dimension
 
     return image
 

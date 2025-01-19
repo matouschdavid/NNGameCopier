@@ -20,7 +20,7 @@ def compress_data():
         filename, _, _ = extract_data_from_line(line.strip())
         # Load and normalize image
         image_path = os.path.join(config.captured_folder, f"{filename}.png")
-        image = Image.open(image_path).convert("L")
+        image = Image.open(image_path).convert(config.frame_channels)
         image = image.resize(config.compressed_frame_resolution)  # Resize to desired dimensions
         image.save(os.path.join(config.compressed_folder, f"{filename}.png"))
 

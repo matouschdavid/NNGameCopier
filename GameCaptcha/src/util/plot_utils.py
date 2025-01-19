@@ -86,6 +86,8 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
         input_sequence = start_input_buffer
         time_sequence = start_time_buffer
 
+        predicted_frames.append(decoder.predict(latent_space_buffer[-1])[0])
+
         for _ in range(frames_to_predict):
             # Predict the next latent space
             next_latent_space = lstm.predict([latent_space_buffer, input_sequence, time_sequence])
@@ -125,7 +127,8 @@ def plot_frames(predicted_frames, frames_to_predict):
     num_frames = len(predicted_frames)
     plt.figure(figsize=(15, 5))
 
-    input_count = int(len(predicted_frames) / frames_to_predict)
+    input_count = int(num_frames / frames_to_predict)
+    print(num_frames, frames_to_predict, input_count)
 
     for r in range(input_count):
         for c in range(frames_to_predict):

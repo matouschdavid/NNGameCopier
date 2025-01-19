@@ -2,7 +2,7 @@ import os
 import shutil
 from PIL import Image
 
-import config
+import GameCaptcha.src.config as config
 from io_utils import extract_data_from_line
 
 

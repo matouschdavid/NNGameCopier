@@ -1,12 +1,10 @@
-import config
+import GameCaptcha.src.config as config
 from keras import Model
 from keras.src.losses import BinaryCrossentropy
-
-from networks_builders.decoder import build_decoder
-from networks_builders.encoder import build_encoder
-
-import keras.backend as K
 import tensorflow as tf
+
+from GameCaptcha.src.networks_builders.decoder import build_decoder
+from GameCaptcha.src.networks_builders.encoder import build_encoder
 
 
 def custom_loss(y_true, y_pred):

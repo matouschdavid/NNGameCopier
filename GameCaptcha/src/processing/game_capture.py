@@ -6,17 +6,17 @@ from PIL import ImageGrab
 from threading import Thread
 from screeninfo import get_monitors
 from pynput.mouse import Controller
+import GameCaptcha.src.config as config
 
-fps = 15
+frame_count = 0 # todo change to continue previous capture
 
 monitor = get_monitors()[0]
-print(monitor.width, monitor.height)
 mouse = Controller()
 
-width = 600
-height = width / 4
-start_x = monitor.width / 2 - width / 2
-start_y = 180
+width = 0
+height = 0
+start_x = 0
+start_y = 0
 
 # Folder to save screenshots
 output_folder = "captured_frames"
@@ -26,7 +26,6 @@ os.makedirs(output_folder, exist_ok=True)
 frame_logs = {}
 running = True
 capture_started = False
-frame_count = 0
 capture_count = 0
 
 current_keys = set()
@@ -90,16 +89,12 @@ def capture_screen():
             frame_count += 1
             capture_count += 1
 
-        time.sleep(max(0, int((1 / fps) - (time.time() - frame_time))))
+        time.sleep(max(0, int((1 / config.target_frame_rate) - (time.time() - frame_time))))
 
 def one_hot_encode_input(keys):
-    # [<space-bit>, <down-bit>]
-    output = [
-        1 if "Key.up" in keys else 0, 
-        1 if "Key.down" in keys else 0,
-        1 if "Key.left" in keys else 0,
-        1 if "Key.right" in keys else 0
-    ]
+    output = []
+    for key in config.input_keys:
+        output.append(1 if key in keys else 0)
 
     return output
 

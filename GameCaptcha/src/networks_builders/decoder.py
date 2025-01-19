@@ -1,4 +1,4 @@
-import config
+import GameCaptcha.src.config as config
 from keras import Model, layers
 
 def build_decoder(latent_height, latent_width):

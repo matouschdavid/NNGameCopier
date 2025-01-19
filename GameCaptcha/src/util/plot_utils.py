@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import config
+import GameCaptcha.src.config as config
 import numpy as np
 
 

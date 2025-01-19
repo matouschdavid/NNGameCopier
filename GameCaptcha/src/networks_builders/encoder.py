@@ -1,4 +1,4 @@
-import config
+import GameCaptcha.src.config as config
 from keras.layers import Conv2D, Flatten, Dense, Reshape, Input
 from keras.models import Model
 

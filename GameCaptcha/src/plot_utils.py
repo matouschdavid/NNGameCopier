@@ -27,25 +27,6 @@ def plot_reconstruction(frames, vae, size=10):
 
     plt.show()
 
-def plot_frame(frame):
-    plt.figure(figsize=(4, 4))
-    plt.subplot(1, 1, 1)
-    plt.imshow(frame.squeeze(), cmap="gray")
-    plt.axis("off")
-    plt.title("Frame")
-
-    plt.show()
-
-def plot_sequence(frames):
-    plt.figure(figsize=(20, 4))
-    for i in range(len(frames)):
-        plt.subplot(1, 10, i + 1)
-        plt.imshow(frames[i], cmap="gray")
-        plt.axis("off")
-        plt.title("Frame")
-
-    plt.show()
-
 def plot_loss(history):
     # Extract the loss and validation loss
     loss = history.history.get('loss')
@@ -67,54 +48,7 @@ def plot_loss(history):
     plt.tight_layout()
     plt.show()
 
-
-# def plot_generated_sequence_flotschi(lstm_model, encoder, decoder, frames, num_frames=5):
-#     # Get a random initial frame from your dataset
-#     random_idx = np.random.randint(0, len(frames))
-#     initial_frame = frames[random_idx:random_idx+1]
-#
-#     # Encode initial frame
-#     _, _, initial_encoded = encoder(initial_frame)
-#     current_encoded = initial_encoded.numpy()
-#
-#     # Create a list to store frames
-#     generated_frames = [initial_frame[0]]  # Start with the initial frame
-#
-#     # Generate subsequent frames
-#     for i in range(num_frames):
-#         # Generate random action (0 or 1) for demonstration
-#         action = np.array([[np.random.randint(0, 1)]])
-#
-#         # Predict next frame
-#         frame_input = current_encoded.reshape(1, 1, -1)
-#         action_input = action.reshape(1, 1, -1)
-#         next_encoded = predict_next_frame(lstm_model, frame_input, action_input)
-#
-#         # Decode the frame
-#         next_frame = decoder(next_encoded.reshape(1, -1))
-#
-#         # Add to list of frames
-#         generated_frames.append(next_frame[0])
-#
-#         # Update current encoded frame
-#         current_encoded = next_encoded
-#
-#     # Plot the frames
-#     fig, axes = plt.subplots(1, num_frames + 1, figsize=(15, 3))
-#     fig.suptitle('Generated Frame Sequence (Initial + 5 Predictions)')
-#
-#     for i, frame in enumerate(generated_frames):
-#         axes[i].imshow(np.squeeze(frame))
-#         axes[i].axis('off')
-#         if i == 0:
-#             axes[i].set_title('Initial')
-#         else:
-#             axes[i].set_title(f'Pred {i}')
-#
-#     plt.tight_layout()
-#     plt.show()
-
-def plot_generated_sequence_flotschi_seqency(lstm_model, encoder, decoder, frames, inputs, num_frames):
+def plot_generated_sequence(lstm_model, encoder, decoder, frames, inputs, num_frames):
     # Get a random starting point that allows for a full sequence
     random_idx = np.random.randint(0, len(frames) - NNGCConstants.sequence_length - num_frames)
 

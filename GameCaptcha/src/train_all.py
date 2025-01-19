@@ -5,12 +5,12 @@ postfix = "_flappy_64"
 
 encoder_path = f"models/vae_encoder{postfix}.keras"
 decoder_path = f"models/vae_decoder{postfix}.keras"
-predictor_path = f"models/lstm_50_longo_model{postfix}.keras"
+predictor_path = f"models/transformer_30_100_model{postfix}.keras"
 
 
 def train_all():
-    # train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32)
-    train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=50, batch_size=512)
+    # train_vae_main(encoder_path, decoder_path, epochs=10, batch_size=128)
+    train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=30, batch_size=512)
 
 
 

@@ -193,7 +193,7 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     decoder = load_model(decoder_path)
 
     # Create the model
-    model = create_lstm_model(
+    model = create_transformer_model(
         latent_dim=NNGCConstants.latent_dimension,
         num_actions=1
     )
@@ -225,13 +225,13 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
 
     plot_loss(history)
 
-    from GameCaptcha.src.plot_utils import plot_generated_sequence_flotschi_seqency
+    from GameCaptcha.src.plot_utils import plot_generated_sequence
     # Plot multiple sequences to evaluate model performance
     print("Generating multiple sequences...")
     sample_frames, sample_inputs, _ = load_data(image_folder, input_file, max=1500)
     for i in range(3):
         print(f"\nSequence {i+1}:")
-        plot_generated_sequence_flotschi_seqency(model, encoder, decoder, sample_frames, sample_inputs, 5)
+        plot_generated_sequence(model, encoder, decoder, sample_frames, sample_inputs, 5)
 
     train_generator.clear_cache()
 

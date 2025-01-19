@@ -31,8 +31,6 @@ def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
     x = layers.Conv2D(32, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Conv2D(64, 3, activation="relu", strides=2, padding="same")(x)
     x = layers.Flatten()(x)
-    # x = layers.Dense(int(latent_dim * 1.5), activation="relu")(x)
-    # x = layers.Dense(latent_dim, activation="relu")(x)
 
     z_mean = layers.Dense(latent_dim, name="z_mean")(x)
     z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
@@ -42,7 +40,6 @@ def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
     encoder.summary()
 
     latent_inputs = keras.Input(shape=(latent_dim,))
-    # x = layers.Dense(int(latent_dim * 1.5), activation="relu")(latent_inputs)
     x = layers.Dense(int(input_height / 8) * int(input_width / 8) * input_channels, activation="relu")(latent_inputs)
     x = layers.Reshape((int(input_height / 8), int(input_width / 8), input_channels))(x)
     x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)

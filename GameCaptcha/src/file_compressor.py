@@ -20,8 +20,6 @@ def compress_data(image_folder, input_file):
         # Load and normalize image
         image_path = os.path.join(image_folder, f"{filename}.png")
         image = Image.open(image_path).convert(NNGCConstants.color_mode)
-        # image = image.resize((256, 64))  # Resize to desired dimensions
-        # image = image.resize((47, 63))  # Resize to desired dimensions
         image = image.resize(NNGCConstants.compressed_image_size)  # Resize to desired dimensions
         image.save(os.path.join(output_folder, f"{filename}.png"))
 

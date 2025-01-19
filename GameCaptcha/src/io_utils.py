@@ -141,7 +141,6 @@ class ImageDataGeneratorEager(keras.utils.Sequence):
 
 class LSTMImageDataGeneratorEager(keras.utils.Sequence):
     def __init__(self, image_folder, input_file, batch_size, sequence_length, encoder, min=0, max=-1):
-        # super().__init__([], {})
         self.image_folder = image_folder
         self.batch_size = batch_size
         self.sequence_length = sequence_length
@@ -175,7 +174,7 @@ class LSTMImageDataGeneratorEager(keras.utils.Sequence):
             unique_filenames.add(filename)
 
         # Load and encode unique images in batches
-        batch_size = 32  # Adjust based on your memory constraints
+        batch_size = 32
         filenames = list(unique_filenames)
 
         for i in range(0, len(filenames), batch_size):
@@ -236,19 +235,14 @@ class LSTMImageDataGeneratorEager(keras.utils.Sequence):
             batch_sequences_inputs.append(sequence_inputs)
             batch_sequences_timestamps.append(sequence_timestamps)
 
-        # batch_sequences_images_head = batch_sequences_images[:][:-1].copy()
-
 
         batch_sequences_images_head = np.array([seq_position[:-1] for seq_position in batch_sequences_images])
         batch_sequences_inputs = np.array([seq_position[:-1] for seq_position in batch_sequences_inputs])
-        # batch_sequences_inputs = np.array(batch_sequences_inputs[:][:-1])
         batch_sequences_timestamps = np.array(batch_sequences_timestamps)
 
         # Return format matches prepare_training_data
         X = (batch_sequences_images_head, batch_sequences_inputs)
         y = np.array([seq_position[-1] for seq_position in batch_sequences_images])
-        # print(X.shape)
-        # print(y.shape)
         return X, y
 
     def clear_cache(self):

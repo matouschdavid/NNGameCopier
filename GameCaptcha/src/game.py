@@ -111,7 +111,7 @@ def main():
 
     encoder_path = f"models/vae_encoder{postfix}.keras"
     decoder_path = f"models/vae_decoder{postfix}.keras"
-    predictor_path = f"models/lstm_50_longo_model{postfix}.keras"
+    predictor_path = f"models/transformer_30_100_model{postfix}.keras"
 
     # Load models and data
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})

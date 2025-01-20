@@ -11,7 +11,7 @@ latent_height = int(input_height / config.downscale_factor)
 latent_width = int(input_width / config.downscale_factor)
 
 autoencoder, encoder, decoder = build_autoencoder(input_shape, latent_height, latent_width)
-history = autoencoder.fit(frames, frames, batch_size=128, epochs=50, validation_split=0.2)
+history = autoencoder.fit(frames, batch_size=128, epochs=50)
 
 print("Done training")
 encoder.save(config.encoder_model_path)

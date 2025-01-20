@@ -1,5 +1,6 @@
 import GameCaptcha.src.config as config
 from keras import layers, Model
+import tensorflow as tf
 import numpy as np
 
 def build_combined_lstm(latent_shape, input_dim):
@@ -13,17 +14,33 @@ def build_combined_lstm(latent_shape, input_dim):
 
     # ConvLSTM for encoder output
     conv_lstm_output = layers.ConvLSTM2D(
-        filters=32, kernel_size=(3, 3), padding="same", return_sequences=True, name="conv_lstm"
+        filters=64, kernel_size=(3, 3), padding="same", return_sequences=True, name="conv_lstm_1"
     )(encoder_input)
-
-    # Flatten the ConvLSTM output while keeping the sequence dimension
+    conv_lstm_output = layers.BatchNormalization()(conv_lstm_output)
+    conv_lstm_output = layers.ConvLSTM2D(
+        filters=32, kernel_size=(3, 3), padding="same", return_sequences=True, name="conv_lstm_2"
+    )(conv_lstm_output)
+    conv_lstm_output = layers.BatchNormalization()(conv_lstm_output)
     flat_conv_lstm_output = layers.TimeDistributed(layers.Flatten(), name="flatten_conv_lstm")(conv_lstm_output)
 
     # Repeat the flattened input vector across sequence length
-    # repeated_input_vector = layers.RepeatVector(input_prominence, name="Repeat Input")(input_vector)
+    expanded = layers.Reshape(target_shape=(config.sequence_length, input_dim, 1), name="Expand_Dimension")(input_vector)
 
+    # Step 2: Repeat the last dimension using `Repeat` layer
+    repeated = layers.Conv2DTranspose(
+        filters=config.input_prominence,
+        kernel_size=(1, 1),
+        activation=None,
+        name="Repeat_Last_Dimension"
+    )(expanded)
+
+    # Step 2: Flatten the last two dimensions
+    flattened_output = layers.Reshape(
+        target_shape=(config.sequence_length, input_dim * config.input_prominence),  # Combine last two dimensions
+        name="Flatten_Repeated_Dimensions"
+    )(repeated)
     # Combine ConvLSTM output with the repeated input vector
-    combined_main_input = layers.Concatenate(name="combine_inputs")([flat_conv_lstm_output, input_vector, time_input])
+    combined_main_input = layers.Concatenate(name="combine_inputs")([flat_conv_lstm_output, flattened_output, time_input])
 
     # LSTM for combined input
     x = layers.LSTM(128, return_sequences=True)(combined_main_input)
@@ -33,11 +50,11 @@ def build_combined_lstm(latent_shape, input_dim):
 
     # Final output layer
     latent_dim = height * width * channels  # Dimension of the latent representation from the encoder
-    total_input_dim = latent_dim + input_dim  # Combining latent representation and input vector
+    total_input_dim = latent_dim + input_dim * config.input_prominence  # Combining latent representation and input vector
     output_dim = total_input_dim + config.time_dim  # Final output dimension
 
     # Output layer for the LSTM model
-    lstm_outputs = layers.Dense(output_dim, name="output_dense")(x)
+    lstm_outputs = layers.Dense(output_dim, name="output_dense_2")(x)
 
     # Define and compile the model
     lstm_model = Model(inputs=[encoder_input, input_vector, time_input], outputs=lstm_outputs, name="combined_lstm_model")
@@ -60,7 +77,7 @@ def prepare_sequences(encoder, frames, inputs, timestamps):
             # Expand dimensions of the frame to simulate a batch with a single frame
             frame_expanded = np.expand_dims(frame, axis=0)  # Shape: (1, height, width, channels)
             # Compute the latent representation and cache it
-            latent_cache[frame_key] = encoder.predict(frame_expanded)[0]  # Remove batch dimension after prediction
+            latent_cache[frame_key] = encoder.predict(frame_expanded)[2][0]  # Remove batch dimension after prediction
         return latent_cache[frame_key]  # Shape: (latent_height, latent_width, latent_channels)
 
     for i in range(len(frames) - config.sequence_length):
@@ -80,12 +97,12 @@ def prepare_sequences(encoder, frames, inputs, timestamps):
         height, width, channels = predict_frame.shape
         predict_frame = predict_frame.reshape(-1, height, width, channels)
 
-        encoder_part = encoder.predict(predict_frame).flatten()
+        encoder_part = encoder.predict(predict_frame)[2].flatten()
         encoder_part = np.expand_dims(encoder_part, -1)
         input_part = inputs[i + config.sequence_length]
         time_part = timestamps[i + config.sequence_length]
 
-        input_part = np.tile(input_part, 1)  # todo add prominence
+        input_part = np.tile(input_part, config.input_prominence)
         input_part = np.expand_dims(input_part, axis=-1)
         time_part = np.expand_dims(time_part, axis=-1)
         time_part = np.expand_dims(time_part, axis=0)
@@ -110,7 +127,7 @@ def get_latent_representation(encoder, frame):
     height, width, channels = frame.shape
     frame = frame.reshape(-1, height, width, channels)
 
-    return encoder.predict(frame)
+    return encoder.predict(frame)[2]
 
 def get_latent_representations(encoder, frame_sequences):
     """

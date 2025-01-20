@@ -3,9 +3,10 @@ from tensorflow.keras.models import load_model
 import random
 
 from GameCaptcha.src.networks_builders.lstm import build_combined_lstm, prepare_sequences
+from GameCaptcha.src.networks_builders.vae import Sampling
 from GameCaptcha.src.util.io_utils import load_data
 
-encoder = load_model(config.encoder_model_path)
+encoder = load_model(config.encoder_model_path, custom_objects={"Sampling": Sampling})
 decoder = load_model(config.decoder_model_path)
 
 frames, inputs, timestamps = load_data(config.compressed_folder) # load every frame, input and timestamp
@@ -17,7 +18,7 @@ chunks = []
 
 lstm_model = build_combined_lstm(config.latent_shape, input_dim)
 
-for k in range(1):
+for k in range(3):
     for i in range(0, len(frames), config.chunk_size):
         if i + config.chunk_size > len(frames):
             rest_size = len(frames) - i
@@ -29,7 +30,7 @@ for k in range(1):
         else:
             chunks.append((i,i + config.chunk_size))
 
-random.shuffle(chunks)
+#random.shuffle(chunks)
 
 counter = 0
 for fr, to in chunks:
@@ -39,13 +40,12 @@ for fr, to in chunks:
     timestamps_chunk = timestamps[fr:to]
     print(f"({counter} / {len(chunks)})")
     latent_sequences, input_sequences, time_sequences, output_sequences = prepare_sequences(encoder, frames_chunk, inputs_chunk, timestamps_chunk)
-    print(latent_sequences.shape, input_sequences.shape, time_sequences.shape, output_sequences.shape)
     # Train the LSTM
     history = lstm_model.fit(
         [latent_sequences, input_sequences, time_sequences],
         output_sequences,
-        batch_size=32,
-        epochs=50,
+        batch_size=64,
+        epochs=25,
         validation_split=0.2
     )
     counter += 1

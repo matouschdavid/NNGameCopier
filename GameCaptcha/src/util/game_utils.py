@@ -1,36 +1,42 @@
 import numpy as np
 import GameCaptcha.src.config as config
 
-def predict_next_frame(decoder, lstm_model, encoder_part, input_part, time_part, input_vector):
-    """Predicts the next frame given a sequence of latent vectors."""
-    next_latent = lstm_model.predict([encoder_part[np.newaxis, ...], input_part[np.newaxis, ...], time_part[np.newaxis, ...]], verbose=0)  # Predict next latent
+def predict_next_frame(decoder, lstm, latent_space_buffer, input_sequence, time_sequence, new_input):
+    # Predict the next latent space
+    batched_buffer = np.expand_dims(latent_space_buffer, axis=0)
+    next_latent_space = lstm.predict([batched_buffer, input_sequence, time_sequence])
 
-    latent_only = remove_input_from_latent_space(next_latent, len(input_vector))
-    
-    latent_only = np.reshape(latent_only, config.latent_shape)[np.newaxis, ...]
+    # Decode the next latent space to reconstruct the frame
+    next_latent_space_cleaned = next_latent_space[:, :-(config.time_dim + len(new_input))]  # Remove time from latent space
+    height, width, channels = config.latent_shape  # Latent shape from encoder output
+    next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
 
-    next_frame = decoder(latent_only)
+    next_frame = decoder.predict(next_latent_space_cleaned)
 
-    input_vector = np.tile(input_vector, config.input_prominence)
-    input_vector = np.expand_dims(input_vector, axis=0)
-    timestamp = time_part[-1][-1] + (1 / config.max_time)
-    if timestamp > 0.8:
-        print("Reset time")
-        timestamp = 0
-    timestamp = np.expand_dims(timestamp, axis=0)
-    timestamp = np.expand_dims(timestamp, axis=0)
+    # Update the latent space buffer
+    latent_space_buffer = np.roll(latent_space_buffer, shift=-1, axis=0)  # Shift latent space buffer
+    latent_space_buffer[-1, :] = next_latent_space_cleaned[0]  # Add the new latent space
 
-    return next_frame, latent_only, input_vector, timestamp
+    # Update the input and time sequences
+    input_sequence = np.roll(input_sequence, shift=-1, axis=1)  # Shift inputs
+    input_sequence[0, -1, :] = new_input  # Assume no new input (can modify as needed)
+
+    last_time_value = time_sequence[0, -1]
+    time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
+    time_sequence[0, -1] = last_time_value + 1/config.max_time  # Assume no new time increment (modify as needed)
+
+    return next_frame, latent_space_buffer, input_sequence, time_sequence
 
     
 def remove_input_from_latent_space(latent_space, input_dim):
     return latent_space[:, :-(input_dim * config.input_prominence + config.time_dim)]
 
 def clean_image(image):
-    image = (image.numpy() * 255).astype(np.uint8)
+    image = (image * 255).astype(np.uint8)
 
     image = np.squeeze(image, axis=0)  # Remove batch dimension
-    image = np.squeeze(image, axis=-1)  # Remove channel dimension
+    if len(config.frame_channels) == 1:
+        image = np.squeeze(image, axis=-1)  # Remove channel dimension
 
     return image
 

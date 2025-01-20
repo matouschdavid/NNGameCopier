@@ -21,11 +21,11 @@ def load_data(image_folder, min=0, max=-1):
         if min == 0 or int(filename.split("_")[1]) >= min:
             # Load and normalize image
             image_path = os.path.join(image_folder, f"{filename}.png")
-            image = Image.open(image_path).convert("L")
+            image = Image.open(image_path).convert(config.frame_channels)
             image = image.resize(config.compressed_frame_resolution)  # Resize to desired dimensions
             image = np.array(image) / 255.0  # Normalize to [0, 1]
-            image = np.expand_dims(image, axis=-1)  # Add channel dimension
-
+            if len(config.frame_channels) == 1:
+                image = np.expand_dims(image, axis=-1)  # Add channel dimension
             images.append(image)
             inputs.append(input_vector)
             timestamps.append(time_stamp)

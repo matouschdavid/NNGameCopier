@@ -35,7 +35,8 @@ def clean_image(image):
     image = (image * 255).astype(np.uint8)
 
     image = np.squeeze(image, axis=0)  # Remove batch dimension
-    image = np.squeeze(image, axis=-1)  # Remove channel dimension
+    if len(config.frame_channels) == 1:
+        image = np.squeeze(image, axis=-1)  # Remove channel dimension
 
     return image
 

@@ -13,3 +13,7 @@ class NNGCConstants:
     # sequence_length = 400
     sequence_length = 100
 
+    model_path = "models_dino/"
+    image_path = "compressed_frames_dino"
+    input_file = f"{image_path}/key_logs.txt"
+

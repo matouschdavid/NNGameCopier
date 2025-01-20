@@ -11,8 +11,8 @@ from GameCaptcha.src.io_utils import load_data, LSTMImageDataGeneratorEager
 from tensorflow.keras.models import load_model
 
 
-image_folder = "compressed_frames"
-input_file = "compressed_frames/key_logs.txt"
+image_folder = NNGCConstants.image_path
+input_file = NNGCConstants.input_file
 
 def create_lstm_model(latent_dim=128, num_actions=1):
     # Input layers
@@ -198,12 +198,6 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
         num_actions=NNGCConstants.action_count
     )
 
-    # frames, inputs, _ = load_data(image_folder, input_file)
-    # _, _, encoded_frames = encoder(frames)
-    # encoded_frames = encoded_frames.numpy()
-
-    # train_model(model, encoded_frames, inputs, epochs=epochs, batch_size=batch_size)
-
     train_generator = LSTMImageDataGeneratorEager(
         image_folder=image_folder,
         input_file=input_file,
@@ -218,7 +212,6 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
         batch_size=batch_size
     )
 
-    # Save the model
     model.save(predictor_path)
 
     from GameCaptcha.src.plot_utils import plot_loss

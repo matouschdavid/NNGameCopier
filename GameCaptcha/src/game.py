@@ -121,9 +121,9 @@ class Window:
 def main():
     postfix = "_dino_64"
 
-    encoder_path = f"models/vae_encoder{postfix}.keras"
-    decoder_path = f"models/vae_decoder{postfix}.keras"
-    predictor_path = f"models/bilstm_model{postfix}.keras"
+    encoder_path = f"{NNGCConstants.model_path}vae_encoder{postfix}.keras"
+    decoder_path = f"{NNGCConstants.model_path}vae_decoder{postfix}.keras"
+    predictor_path = f"{NNGCConstants.model_path}bilstm_model{postfix}.keras"
 
     # Load models and data
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
@@ -131,9 +131,9 @@ def main():
     predictor = load_model(predictor_path, custom_objects={'PositionalEncoding': PositionalEncoding}, safe_mode=False)
 
     # Load initial frames
-    image_folder = "compressed_frames"
-    input_file = "compressed_frames/key_logs.txt"
-    frames, inputs, _ = load_data(image_folder, input_file)
+    image_folder = NNGCConstants.image_path
+    input_file = NNGCConstants.input_file
+    frames, inputs, _ = load_data(image_folder, input_file, max=1_000)
 
     entrypoint = 170
     # Get initial encoded frames

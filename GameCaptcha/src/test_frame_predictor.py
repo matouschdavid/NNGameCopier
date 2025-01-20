@@ -3,6 +3,7 @@ from tensorflow import keras
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 
+from GameCaptcha.src.constants import NNGCConstants
 from GameCaptcha.src.io_utils import load_data
 from GameCaptcha.src.plot_utils import plot_generated_sequence
 from GameCaptcha.src.train_frame_predictor import PositionalEncoding
@@ -10,19 +11,19 @@ from GameCaptcha.src.vae import Sampling
 
 
 
-postfix = "_flappy_64"
+postfix = "_dino_64"
 
-encoder_path = f"models/vae_encoder{postfix}.keras"
-decoder_path = f"models/vae_decoder{postfix}.keras"
-predictor_path = f"models/model{postfix}.keras"
+encoder_path = f"{NNGCConstants.model_path}vae_encoder{postfix}.keras"
+decoder_path = f"{NNGCConstants.model_path}vae_decoder{postfix}.keras"
+predictor_path = f"{NNGCConstants.model_path}bilstm_model{postfix}.keras"
 
 encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
 decoder = load_model(decoder_path)
 lstm_model = load_model(predictor_path, custom_objects={'PositionalEncoding': PositionalEncoding}, safe_mode=False)
 
 # Load the data
-image_folder = "compressed_frames"
-input_file = "compressed_frames/key_logs.txt"
+image_folder = NNGCConstants.image_path
+input_file = NNGCConstants.input_file
 frames, inputs, _ = load_data(image_folder, input_file, max=1000)
 
 # Generate and plot multiple sequences

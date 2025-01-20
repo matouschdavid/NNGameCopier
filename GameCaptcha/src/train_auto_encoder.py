@@ -10,8 +10,8 @@ from GameCaptcha.src.vae import Sampling, VAE
 
 
 def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
-    image_folder = "compressed_frames"
-    input_file = "compressed_frames/key_logs.txt"
+    image_folder = NNGCConstants.image_path
+    input_file = NNGCConstants.input_file
 
     (input_width, input_height) = NNGCConstants.compressed_image_size
     input_channels = 1 if NNGCConstants.color_mode == 'L' else 3

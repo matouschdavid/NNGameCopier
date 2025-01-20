@@ -7,7 +7,7 @@ def plot_reconstruction(frames, encoder, decoder, size=10):
     sample_indices = np.random.choice(len(frames), size=size, replace=False)
     sample_frames = frames[sample_indices]
 
-    latent_spaces = encoder.predict(sample_frames)
+    _, _, latent_spaces = encoder.predict(sample_frames)
     reconstructed_frames = decoder.predict(latent_spaces)
 
     plt.figure(figsize=(size*2, 2))
@@ -71,7 +71,7 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
     """
     # Step 1: Initialize the latent space buffer
     # Encode the last `sequence_length` frames to latent space
-    start_encoder_buffer = np.expand_dims(encoder.predict(frames), axis=0)  # Add batch dimension
+    _, _, start_encoder_buffer = encoder.predict(frames)
 
 
     # Add batch and sequence dimensions
@@ -80,22 +80,26 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
 
     # Step 3: Predict frames iteratively
     predicted_frames = []
+    plot_buffer = start_encoder_buffer
 
     for input_at_start in inputs_at_start:
         latent_space_buffer = start_encoder_buffer
         input_sequence = start_input_buffer
         time_sequence = start_time_buffer
 
-        predicted_frames.append(decoder.predict(latent_space_buffer[-1])[0])
-
-        for _ in range(frames_to_predict):
+        predicted_frames.append(decoder.predict(np.expand_dims(latent_space_buffer[-1], axis=0))[0])
+        for i in range(frames_to_predict):
             # Predict the next latent space
-            next_latent_space = lstm.predict([latent_space_buffer, input_sequence, time_sequence])
+            batched_buffer = np.expand_dims(latent_space_buffer, axis=0)
+            print("B", batched_buffer.shape)
+            next_latent_space = lstm.predict([batched_buffer, input_sequence, time_sequence])
 
             # Decode the next latent space to reconstruct the frame
+            print("Before", next_latent_space.shape)
             next_latent_space_cleaned = next_latent_space[:, :-(config.time_dim + input_dim)]  # Remove time from latent space
-            height, width, channels = encoder.output.shape[1:]  # Latent shape from encoder output
+            height, width, channels = encoder.output[2].shape[1:]  # Latent shape from encoder output
             next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
+            print("After", next_latent_space_cleaned.shape)
 
             next_frame = decoder.predict(next_latent_space_cleaned)
 
@@ -103,8 +107,8 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
             predicted_frames.append(next_frame[0])  # Remove batch dimension
 
             # Update the latent space buffer
-            latent_space_buffer = np.roll(latent_space_buffer, shift=-1, axis=1)  # Shift latent space buffer
-            latent_space_buffer[0, -1, :] = next_latent_space_cleaned[0]  # Add the new latent space
+            latent_space_buffer = np.roll(latent_space_buffer, shift=-1, axis=0)  # Shift latent space buffer
+            latent_space_buffer[-1, :] = next_latent_space_cleaned[0]  # Add the new latent space
 
             # Update the input and time sequences
             input_sequence = np.roll(input_sequence, shift=-1, axis=1)  # Shift inputs
@@ -113,6 +117,19 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
             last_time_value = time_sequence[0, -1]
             time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
             time_sequence[0, -1] = last_time_value + 1/config.max_time  # Assume no new time increment (modify as needed)
+
+        plot_buffer = latent_space_buffer
+
+    reconstructed_frames = decoder.predict(plot_buffer)
+
+    plt.figure(figsize=(config.sequence_length, 1))
+    for i in range(config.sequence_length):
+        plt.subplot(1, config.sequence_length, i + 1)
+        plt.imshow(reconstructed_frames[i].squeeze(), cmap="gray")
+        plt.axis("off")
+        plt.title(f"{i}")
+
+    plt.show()
 
     return predicted_frames
 

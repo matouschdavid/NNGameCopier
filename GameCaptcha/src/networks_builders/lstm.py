@@ -62,7 +62,7 @@ def prepare_sequences(encoder, frames, inputs, timestamps):
             # Expand dimensions of the frame to simulate a batch with a single frame
             frame_expanded = np.expand_dims(frame, axis=0)  # Shape: (1, height, width, channels)
             # Compute the latent representation and cache it
-            latent_cache[frame_key] = encoder.predict(frame_expanded)[0]  # Remove batch dimension after prediction
+            latent_cache[frame_key] = encoder.predict(frame_expanded)[2][0]  # Remove batch dimension after prediction
         return latent_cache[frame_key]  # Shape: (latent_height, latent_width, latent_channels)
 
     for i in range(len(frames) - config.sequence_length):
@@ -82,7 +82,7 @@ def prepare_sequences(encoder, frames, inputs, timestamps):
         height, width, channels = predict_frame.shape
         predict_frame = predict_frame.reshape(-1, height, width, channels)
 
-        encoder_part = encoder.predict(predict_frame).flatten()
+        encoder_part = encoder.predict(predict_frame)[2].flatten()
         encoder_part = np.expand_dims(encoder_part, -1)
         input_part = inputs[i + config.sequence_length]
         time_part = timestamps[i + config.sequence_length]
@@ -112,7 +112,7 @@ def get_latent_representation(encoder, frame):
     height, width, channels = frame.shape
     frame = frame.reshape(-1, height, width, channels)
 
-    return encoder.predict(frame)
+    return encoder.predict(frame)[2]
 
 def get_latent_representations(encoder, frame_sequences):
     """

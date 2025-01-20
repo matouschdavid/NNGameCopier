@@ -1,10 +1,10 @@
 import numpy as np
 from tensorflow import keras
 import tensorflow as tf
-from tensorflow.keras import layers, Model
+from tensorflow.keras import layers
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data, LSTMImageDataGeneratorEager
+from src.constants import NNGCConstants
+from src.io_utils import load_data, LSTMImageDataGeneratorEager
 from tensorflow.keras.models import load_model
 
 image_folder = NNGCConstants.image_path
@@ -183,7 +183,7 @@ def predict_next_frame(model, current_encoded_frames, current_actions):
 
 
 def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100, batch_size=32):
-    from GameCaptcha.src.vae import Sampling
+    from src.vae import Sampling
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
     decoder = load_model(decoder_path)
 
@@ -208,11 +208,11 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
 
     model.save(predictor_path)
 
-    from GameCaptcha.src.plot_utils import plot_loss
+    from src.plot_utils import plot_loss
 
     plot_loss(history)
 
-    from GameCaptcha.src.plot_utils import plot_generated_sequence
+    from src.plot_utils import plot_generated_sequence
     print("Generating multiple sequences...")
     sample_frames, sample_inputs, _ = load_data(image_folder, input_file, max=1500)
     for i in range(3):

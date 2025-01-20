@@ -6,10 +6,10 @@ import threading
 import time
 from collections import deque
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.train_frame_predictor import predict_next_frame, PositionalEncoding
-from GameCaptcha.src.vae import Sampling
+from src.constants import NNGCConstants
+from src.io_utils import load_data
+from src.train_frame_predictor import predict_next_frame, PositionalEncoding
+from src.vae import Sampling
 
 frame_with = NNGCConstants.compressed_image_size[0]
 frame_height = NNGCConstants.compressed_image_size[1]

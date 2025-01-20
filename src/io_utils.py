@@ -5,7 +5,7 @@ import re
 
 from tensorflow import keras
 
-from GameCaptcha.src.constants import NNGCConstants
+from src.constants import NNGCConstants
 
 
 def load_image(image_folder, filename):

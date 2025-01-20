@@ -1,10 +1,10 @@
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data, ImageDataGeneratorEager, ImageDataGenerator
-from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
+from src.constants import NNGCConstants
+from src.io_utils import ImageDataGenerator
+from src.plot_utils import plot_loss, plot_reconstruction
 from tensorflow import keras
 from tensorflow.keras import layers
 
-from GameCaptcha.src.vae import Sampling, VAE
+from src.vae import Sampling, VAE
 
 
 def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):

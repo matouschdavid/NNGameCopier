@@ -1,6 +1,6 @@
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.train_auto_encoder import train_vae_main
-from GameCaptcha.src.train_frame_predictor import train_prediction_main
+from src.constants import NNGCConstants
+from src.train_auto_encoder import train_vae_main
+from src.train_frame_predictor import train_prediction_main
 
 postfix = NNGCConstants.postfix
 

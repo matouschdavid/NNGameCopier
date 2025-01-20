@@ -1,9 +1,6 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-
-from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
 
 
 class Sampling(layers.Layer):

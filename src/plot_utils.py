@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.train_frame_predictor import predict_next_frame
+from src.constants import NNGCConstants
+from src.train_frame_predictor import predict_next_frame
 
 
 def plot_reconstruction(frames, vae, size=10):

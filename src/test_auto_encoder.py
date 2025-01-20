@@ -1,9 +1,9 @@
 from tensorflow.keras.models import load_model
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.plot_utils import plot_reconstruction
-from GameCaptcha.src.vae import Sampling, VAE
+from src.constants import NNGCConstants
+from src.io_utils import load_data
+from src.plot_utils import plot_reconstruction
+from src.vae import Sampling, VAE
 
 postfix = NNGCConstants.postfix
 

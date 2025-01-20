@@ -1,13 +1,10 @@
-import numpy as np
-from tensorflow import keras
-import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import load_data
-from GameCaptcha.src.plot_utils import plot_generated_sequence
-from GameCaptcha.src.train_frame_predictor import PositionalEncoding
-from GameCaptcha.src.vae import Sampling
+from src.constants import NNGCConstants
+from src.io_utils import load_data
+from src.plot_utils import plot_generated_sequence
+from src.train_frame_predictor import PositionalEncoding
+from src.vae import Sampling
 
 postfix = NNGCConstants.postfix
 

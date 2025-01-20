@@ -2,8 +2,8 @@ import os
 import shutil
 from PIL import Image
 
-from GameCaptcha.src.constants import NNGCConstants
-from GameCaptcha.src.io_utils import extract_data_from_line
+from src.constants import NNGCConstants
+from src.io_utils import extract_data_from_line
 
 
 # Load Frames and Inputs

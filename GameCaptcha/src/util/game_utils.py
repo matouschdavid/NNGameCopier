@@ -1,14 +1,14 @@
 import numpy as np
 import GameCaptcha.src.config as config
 
-def predict_next_frame(encoder, decoder, lstm, latent_space_buffer, input_sequence, time_sequence, new_input):
+def predict_next_frame(decoder, lstm, latent_space_buffer, input_sequence, time_sequence, new_input):
     # Predict the next latent space
     batched_buffer = np.expand_dims(latent_space_buffer, axis=0)
     next_latent_space = lstm.predict([batched_buffer, input_sequence, time_sequence])
 
     # Decode the next latent space to reconstruct the frame
     next_latent_space_cleaned = next_latent_space[:, :-(config.time_dim + len(new_input))]  # Remove time from latent space
-    height, width, channels = encoder.output[2].shape[1:]  # Latent shape from encoder output
+    height, width, channels = config.latent_shape  # Latent shape from encoder output
     next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
 
     next_frame = decoder.predict(next_latent_space_cleaned)
@@ -32,7 +32,7 @@ def remove_input_from_latent_space(latent_space, input_dim):
     return latent_space[:, :-(input_dim * config.input_prominence + config.time_dim)]
 
 def clean_image(image):
-    image = (image.numpy() * 255).astype(np.uint8)
+    image = (image * 255).astype(np.uint8)
 
     image = np.squeeze(image, axis=0)  # Remove batch dimension
     image = np.squeeze(image, axis=-1)  # Remove channel dimension

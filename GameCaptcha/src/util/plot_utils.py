@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import GameCaptcha.src.config as config
 import numpy as np
 
+from GameCaptcha.src.util.game_utils import predict_next_frame
+
 
 def plot_reconstruction(frames, encoder, decoder, size=10):
     sample_indices = np.random.choice(len(frames), size=size, replace=False)
@@ -89,35 +91,8 @@ def predict_sequence(encoder, decoder, lstm, frames, inputs, times, frames_to_pr
 
         predicted_frames.append(decoder.predict(np.expand_dims(latent_space_buffer[-1], axis=0))[0])
         for i in range(frames_to_predict):
-            # Predict the next latent space
-            batched_buffer = np.expand_dims(latent_space_buffer, axis=0)
-            print("B", batched_buffer.shape)
-            next_latent_space = lstm.predict([batched_buffer, input_sequence, time_sequence])
-
-            # Decode the next latent space to reconstruct the frame
-            print("Before", next_latent_space.shape)
-            next_latent_space_cleaned = next_latent_space[:, :-(config.time_dim + input_dim)]  # Remove time from latent space
-            height, width, channels = encoder.output[2].shape[1:]  # Latent shape from encoder output
-            next_latent_space_cleaned = next_latent_space_cleaned.reshape((-1, height, width, channels))
-            print("After", next_latent_space_cleaned.shape)
-
-            next_frame = decoder.predict(next_latent_space_cleaned)
-
-            # Store the predicted frame
-            predicted_frames.append(next_frame[0])  # Remove batch dimension
-
-            # Update the latent space buffer
-            latent_space_buffer = np.roll(latent_space_buffer, shift=-1, axis=0)  # Shift latent space buffer
-            latent_space_buffer[-1, :] = next_latent_space_cleaned[0]  # Add the new latent space
-
-            # Update the input and time sequences
-            input_sequence = np.roll(input_sequence, shift=-1, axis=1)  # Shift inputs
-            input_sequence[0, -1, :] = input_at_start  # Assume no new input (can modify as needed)
-
-            last_time_value = time_sequence[0, -1]
-            time_sequence = np.roll(time_sequence, shift=-1, axis=1)  # Shift times
-            time_sequence[0, -1] = last_time_value + 1/config.max_time  # Assume no new time increment (modify as needed)
-
+            next_frame, latent_space_buffer, input_sequence, time_sequence = predict_next_frame(decoder, lstm, latent_space_buffer, input_sequence, time_sequence, input_at_start)
+            predicted_frames.append(next_frame)
         plot_buffer = latent_space_buffer
 
     reconstructed_frames = decoder.predict(plot_buffer)

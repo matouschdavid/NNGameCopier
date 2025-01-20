@@ -13,9 +13,9 @@ lstm = load_model(config.lstm_model_path)
 
 frames, inputs, timestamps = load_data(config.compressed_folder, min=0, max=200)
 frames = frames[-config.sequence_length:]
-inputs = inputs[-config.sequence_length:]
-timestamps = timestamps[-config.sequence_length:] / config.max_time
-encoder_part, input_part, time_part = encode_frames(encoder, frames, inputs, timestamps)
+input_part = inputs[-config.sequence_length:]
+time_part = timestamps[-config.sequence_length:] / config.max_time
+_, _, encoder_part = encoder.predict(frames)
 
 app = Window()
 prediction_thread = threading.Thread(target=app.start_prediction_loop, args=(encoder_part, input_part, time_part, decoder, lstm))

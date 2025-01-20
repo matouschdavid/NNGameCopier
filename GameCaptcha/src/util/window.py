@@ -37,31 +37,18 @@ class Window:
 
     def update(self, decoder, lstm):
         """Updates the window with the predicted frames."""
-        next_image, new_encoder_element, new_input_element, new_time_element = predict_next_frame(decoder, lstm, self.encoder_part, self.input_part, self.time_part, self.input_vector)
-        self.update_buffers(new_encoder_element, new_input_element, new_time_element)
+        next_image, self.encoder_part, self.input_part, self.time_part = predict_next_frame(decoder, lstm, self.encoder_part, self.input_part, self.time_part, self.input_vector)
 
         next_image = clean_image(next_image)
 
         next_image_pil = Image.fromarray(next_image, mode=config.frame_channels)
         next_image_pil = next_image_pil.resize(config.output_frame_resolution)
         self.set_image(next_image_pil)
-    
-    def update_buffers(self, new_encoder_element, new_input_element, new_time_element):
-        self.update_buffer(self.encoder_part, new_encoder_element)
-        self.update_buffer(self.input_part, new_input_element)
-        self.update_buffer(self.time_part, new_time_element)
-    
-    def update_buffer(self, buffer, new_element):
-        # Roll the buffer to the left (remove the first element)
-        buffer = np.roll(buffer, shift=-1, axis=0)
-        # Add the new latent space at the end of the buffer
-        buffer[-1] = new_element
-        return buffer
 
     def start_prediction_loop(self, encoder_part, input_part, time_part, decoder, lstm):
         self.encoder_part = encoder_part
-        self.input_part = input_part
-        self.time_part = time_part
+        self.input_part = np.expand_dims(np.tile(input_part, config.input_prominence), axis=0)  # Repeat inputs for prominence
+        self.time_part = np.expand_dims(time_part, axis=0)  # Add batch dimension
 
         """Run the prediction loop in a separate thread."""
         delta_time = 1 / config.target_frame_rate

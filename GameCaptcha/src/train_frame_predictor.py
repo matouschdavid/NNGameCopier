@@ -2,21 +2,18 @@ import numpy as np
 from tensorflow import keras
 import tensorflow as tf
 from tensorflow.keras import layers, Model
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import SimpleRNN, Dense, Input, LSTM, Dropout, BatchNormalization
-import matplotlib.pyplot as plt
 
 from GameCaptcha.src.constants import NNGCConstants
 from GameCaptcha.src.io_utils import load_data, LSTMImageDataGeneratorEager
 from tensorflow.keras.models import load_model
 
-
 image_folder = NNGCConstants.image_path
 input_file = NNGCConstants.input_file
 
+
 def create_lstm_model(latent_dim=128, num_actions=1):
     latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))
-    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))
+    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions * NNGCConstants.action_weight))
 
     combined_input = layers.Concatenate(axis=-1)([latent_input, action_input])
     lstm1 = layers.LSTM(256, return_sequences=True)(combined_input)
@@ -29,9 +26,10 @@ def create_lstm_model(latent_dim=128, num_actions=1):
     model.compile(optimizer='adam', loss='mse')
     return model
 
+
 def create_gru_model(latent_dim=128, num_actions=1):
     latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))
-    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))
+    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions * NNGCConstants.action_weight))
 
     combined_input = layers.Concatenate(axis=-1)([latent_input, action_input])
     gru1 = layers.GRU(256, return_sequences=True)(combined_input)
@@ -44,6 +42,7 @@ def create_gru_model(latent_dim=128, num_actions=1):
     model.compile(optimizer='adam', loss='mse')
     return model
 
+
 class PositionalEncoding(layers.Layer):
     def __init__(self, sequence_length, d_model, **kwargs):
         super().__init__(**kwargs)
@@ -54,7 +53,7 @@ class PositionalEncoding(layers.Layer):
         self.pos_encoding = self._positional_encoding()
 
     def _get_angles(self, pos, i):
-        angle_rates = 1 / np.power(10000, (2 * (i//2)) / np.float32(self.d_model))
+        angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(self.d_model))
         return pos * angle_rates
 
     def _positional_encoding(self):
@@ -84,14 +83,15 @@ class PositionalEncoding(layers.Layer):
         })
         return config
 
+
 def create_transformer_model(latent_dim=128, num_actions=1):
     latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))
-    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))
+    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions * NNGCConstants.action_weight))
 
     combined_input = layers.Concatenate(axis=-1)([latent_input, action_input])
 
     # Calculate total dimension after concatenation
-    total_dim = latent_dim + num_actions*NNGCConstants.action_weight
+    total_dim = latent_dim + num_actions * NNGCConstants.action_weight
 
     # Add positional encoding
     pos_encoding = PositionalEncoding(NNGCConstants.sequence_length, total_dim)
@@ -110,9 +110,10 @@ def create_transformer_model(latent_dim=128, num_actions=1):
     model.compile(optimizer='adam', loss='mse')
     return model
 
+
 def create_bilstm_attention_model(latent_dim=128, num_actions=1):
     latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))
-    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))
+    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions * NNGCConstants.action_weight))
 
     combined_input = layers.Concatenate(axis=-1)([latent_input, action_input])
 
@@ -135,26 +136,24 @@ def create_bilstm_attention_model(latent_dim=128, num_actions=1):
     model.compile(optimizer='adam', loss='mse')
     return model
 
-# Function to prepare data for training
+
 def prepare_training_data(encoded_frames, actions):
     X_frames = []
     X_actions = []
     y = []
 
     for i in range(len(encoded_frames) - NNGCConstants.sequence_length):
-        X_frames.append(encoded_frames[i:i+NNGCConstants.sequence_length])
-        X_actions_unweighted = actions[i:i+NNGCConstants.sequence_length]
+        X_frames.append(encoded_frames[i:i + NNGCConstants.sequence_length])
+        X_actions_unweighted = actions[i:i + NNGCConstants.sequence_length]
         X_actions.append([action * NNGCConstants.action_weight for action in X_actions_unweighted])
-        y.append(encoded_frames[i+NNGCConstants.sequence_length])
+        y.append(encoded_frames[i + NNGCConstants.sequence_length])
 
     return [np.array(X_frames), np.array(X_actions)], np.array(y)
 
-# Example training code (you'll need to adapt this to your specific data)
+
 def train_model(model, encoded_frames, actions, epochs=100, batch_size=32):
-    # Prepare training data
     X, y = prepare_training_data(encoded_frames, actions)
 
-    # Train the model
     history = model.fit(
         X, y,
         epochs=epochs,
@@ -164,35 +163,31 @@ def train_model(model, encoded_frames, actions, epochs=100, batch_size=32):
 
     return history
 
-# Function to predict the next frame
+
 def predict_next_frame(model, current_encoded_frames, current_actions):
-    # Ensure we have the correct sequence length
     if len(current_encoded_frames) < NNGCConstants.sequence_length:
         raise ValueError("Not enough frames for sequence")
 
-    # Take the last sequence_length frames
     frame_sequence = current_encoded_frames[-NNGCConstants.sequence_length:]
     action_sequence = current_actions[-NNGCConstants.sequence_length:]
-
-    # Adjust actions weight
     weighted_actions = [list(actions) * NNGCConstants.action_weight for actions in action_sequence]
 
     # Reshape inputs for prediction
-    frame_input = np.array([frame_sequence])  # Shape: (1, sequence_length, latent_dim)
-    action_input = np.array([weighted_actions])  # Shape: (1, sequence_length, num_actions * NNGCConstants.action_weight)
+    frame_input = np.array([frame_sequence])
+    action_input = np.array(
+        [weighted_actions])
 
-    # Predict next latent state
     next_encoded_frame = model.predict([frame_input, action_input])
 
     return next_encoded_frame[0]
+
 
 def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100, batch_size=32):
     from GameCaptcha.src.vae import Sampling
     encoder = load_model(encoder_path, custom_objects={"Sampling": Sampling})
     decoder = load_model(decoder_path)
 
-    # Create the model
-    model = create_gru_model(
+    model = create_lstm_model(
         latent_dim=NNGCConstants.latent_dimension,
         num_actions=NNGCConstants.action_count
     )
@@ -218,15 +213,10 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     plot_loss(history)
 
     from GameCaptcha.src.plot_utils import plot_generated_sequence
-    # Plot multiple sequences to evaluate model performance
     print("Generating multiple sequences...")
     sample_frames, sample_inputs, _ = load_data(image_folder, input_file, max=1500)
     for i in range(3):
-        print(f"\nSequence {i+1}:")
+        print(f"\nSequence {i + 1}:")
         plot_generated_sequence(model, encoder, decoder, sample_frames, sample_inputs, 5)
 
     train_generator.clear_cache()
-
-
-if __name__ == '__main__':
-    train_prediction_main()

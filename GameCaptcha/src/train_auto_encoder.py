@@ -1,8 +1,6 @@
 from GameCaptcha.src.constants import NNGCConstants
 from GameCaptcha.src.io_utils import load_data, ImageDataGeneratorEager, ImageDataGenerator
 from GameCaptcha.src.plot_utils import plot_loss, plot_reconstruction
-import numpy as np
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
@@ -67,6 +65,7 @@ def train_vae_main(encoder_path, decoder_path, epochs=100, batch_size=32):
 
     vae.encoder.save(encoder_path)
     vae.decoder.save(decoder_path)
+
 
 if __name__ == '__main__':
     train_vae_main()

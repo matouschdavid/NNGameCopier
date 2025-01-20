@@ -1,5 +1,6 @@
 import GameCaptcha.src.config as config
 from keras import layers, Model
+import tensorflow as tf
 import numpy as np
 
 def build_combined_lstm(latent_shape, input_dim):
@@ -23,22 +24,36 @@ def build_combined_lstm(latent_shape, input_dim):
     flat_conv_lstm_output = layers.TimeDistributed(layers.Flatten(), name="flatten_conv_lstm")(conv_lstm_output)
 
     # Repeat the flattened input vector across sequence length
-    # repeated_input_vector = layers.RepeatVector(input_prominence, name="Repeat Input")(input_vector)
+    expanded = layers.Reshape(target_shape=(config.sequence_length, input_dim, 1), name="Expand_Dimension")(input_vector)
 
+    # Step 2: Repeat the last dimension using `Repeat` layer
+    repeated = layers.Conv2DTranspose(
+        filters=config.input_prominence,
+        kernel_size=(1, 1),
+        activation=None,
+        name="Repeat_Last_Dimension"
+    )(expanded)
+
+    # Step 2: Flatten the last two dimensions
+    flattened_output = layers.Reshape(
+        target_shape=(config.sequence_length, input_dim * config.input_prominence),  # Combine last two dimensions
+        name="Flatten_Repeated_Dimensions"
+    )(repeated)
     # Combine ConvLSTM output with the repeated input vector
-    combined_main_input = layers.Concatenate(name="combine_inputs")([flat_conv_lstm_output, input_vector, time_input])
+    combined_main_input = layers.Concatenate(name="combine_inputs")([flat_conv_lstm_output, flattened_output, time_input])
 
     # LSTM for combined input
-    x = layers.LSTM(64, return_sequences=False)(combined_main_input)
+    x = layers.LSTM(128, return_sequences=True)(combined_main_input)
+    x = layers.Dropout(0.2)(x)
+    x = layers.LSTM(64, return_sequences=False)(x)
     x = layers.Dropout(0.2)(x)
 
     # Final output layer
     latent_dim = height * width * channels  # Dimension of the latent representation from the encoder
-    total_input_dim = latent_dim + input_dim  # Combining latent representation and input vector
+    total_input_dim = latent_dim + input_dim * config.input_prominence  # Combining latent representation and input vector
     output_dim = total_input_dim + config.time_dim  # Final output dimension
 
     # Output layer for the LSTM model
-    x = layers.Dense(int(output_dim / 2), name="output_dense_1")(x)
     lstm_outputs = layers.Dense(output_dim, name="output_dense_2")(x)
 
     # Define and compile the model

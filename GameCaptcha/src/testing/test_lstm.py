@@ -2,10 +2,14 @@ import numpy as np
 
 import GameCaptcha.src.config as config
 from tensorflow.keras.models import load_model
+from tensorflow import keras
+from keras.models import load_model
 
 from GameCaptcha.src.networks_builders.vae import Sampling
 from GameCaptcha.src.util.io_utils import load_data
 from GameCaptcha.src.util.plot_utils import plot_frames, predict_sequence
+
+keras.config.enable_unsafe_deserialization()
 
 encoder = load_model(config.encoder_model_path, custom_objects={"Sampling": Sampling})
 decoder = load_model(config.decoder_model_path)
@@ -25,7 +29,7 @@ for i in range(input_dim):
     input_at_start[i] = 1
     inputs_at_start.append(input_at_start)
 
-frames_to_predict = 5
+frames_to_predict = 50
 
 predicted_frames = predict_sequence(
     encoder, decoder, lstm_model, initial_frames, input_vectors, time_values, frames_to_predict, config.input_prominence, input_dim, inputs_at_start

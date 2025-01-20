@@ -3,9 +3,10 @@ from tensorflow.keras.models import load_model
 import random
 
 from GameCaptcha.src.networks_builders.lstm import build_combined_lstm, prepare_sequences
+from GameCaptcha.src.networks_builders.vae import Sampling
 from GameCaptcha.src.util.io_utils import load_data
 
-encoder = load_model(config.encoder_model_path)
+encoder = load_model(config.encoder_model_path, custom_objects={"Sampling": Sampling})
 decoder = load_model(config.decoder_model_path)
 
 frames, inputs, timestamps = load_data(config.compressed_folder, max=2000) # load every frame, input and timestamp

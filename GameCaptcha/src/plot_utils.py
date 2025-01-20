@@ -102,8 +102,8 @@ def plot_generated_sequence(lstm_model, encoder, decoder, frames, inputs, num_fr
         action_sequence[-1] = new_action
 
     # Plot the frames
-    fig, axes = plt.subplots(1, num_frames + 1, figsize=(15, 6))
-    fig.suptitle(f'Generated Frame Sequence (Initial + {num_frames} Predictions)')
+    fig, axes = plt.subplots(1, num_frames + 1, figsize=(15, 2))
+    fig.suptitle(NNGCConstants.plot_title)
 
     actions_to_plot = np.concatenate([initial_actions[-1:], future_actions[:num_frames]])
 

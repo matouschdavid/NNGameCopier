@@ -15,9 +15,8 @@ image_folder = NNGCConstants.image_path
 input_file = NNGCConstants.input_file
 
 def create_lstm_model(latent_dim=128, num_actions=1):
-    # Input layers
-    latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))  # Changed from (1, latent_dim)
-    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))  # Changed from (1, num_actions)
+    latent_input = layers.Input(shape=(NNGCConstants.sequence_length, latent_dim))
+    action_input = layers.Input(shape=(NNGCConstants.sequence_length, num_actions*NNGCConstants.action_weight))
 
     combined_input = layers.Concatenate(axis=-1)([latent_input, action_input])
     lstm1 = layers.LSTM(256, return_sequences=True)(combined_input)
@@ -193,7 +192,7 @@ def train_prediction_main(encoder_path, decoder_path, predictor_path, epochs=100
     decoder = load_model(decoder_path)
 
     # Create the model
-    model = create_bilstm_attention_model(
+    model = create_gru_model(
         latent_dim=NNGCConstants.latent_dimension,
         num_actions=NNGCConstants.action_count
     )

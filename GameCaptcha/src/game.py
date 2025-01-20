@@ -119,7 +119,7 @@ class Window:
         self.root.quit()
 
 def main():
-    postfix = "_dino_64"
+    postfix = NNGCConstants.postfix
 
     encoder_path = f"{NNGCConstants.model_path}vae_encoder{postfix}.keras"
     decoder_path = f"{NNGCConstants.model_path}vae_decoder{postfix}.keras"

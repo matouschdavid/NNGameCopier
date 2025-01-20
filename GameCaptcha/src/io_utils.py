@@ -8,6 +8,18 @@ from tensorflow import keras
 from GameCaptcha.src.constants import NNGCConstants
 
 
+def load_image(image_folder, filename):
+    image_path = os.path.join(image_folder, f"{filename}.png")
+    image = Image.open(image_path).convert(NNGCConstants.color_mode)
+    image = image.resize(NNGCConstants.compressed_image_size)  # Resize to desired dimensions
+    image = np.array(image) / 255.0  # Normalize to [0, 1]
+
+    if NNGCConstants.color_mode == "L":
+        image = np.expand_dims(image, axis=-1)
+
+    return image
+
+
 def load_data(image_folder, input_file, min=0, max=-1):
     images = []
     inputs = []
@@ -21,15 +33,7 @@ def load_data(image_folder, input_file, min=0, max=-1):
         filename, input_vector, time_stamp = extract_data_from_line(line.strip())
 
         if min == 0 or int(filename.split("_")[1]) >= min:
-            # Load and normalize image
-            image_path = os.path.join(image_folder, f"{filename}.png")
-            image = Image.open(image_path).convert(NNGCConstants.color_mode)
-            image = image.resize(NNGCConstants.compressed_image_size)  # Resize to desired dimensions
-            image = np.array(image) / 255.0  # Normalize to [0, 1]
-
-            if NNGCConstants.color_mode == "L":
-                image = np.expand_dims(image, axis=-1)
-
+            image = load_image(image_folder, filename)
             images.append(image)
             inputs.append(input_vector)
             timestamps.append(time_stamp)
@@ -56,7 +60,6 @@ class ImageDataGenerator(keras.utils.Sequence):
         self.min = min
         self.max = max
 
-        # Read file paths once
         with open(input_file, "r") as f:
             self.lines = f.readlines()
             if max > 0:
@@ -78,15 +81,7 @@ class ImageDataGenerator(keras.utils.Sequence):
         for i in batch_indices:
             line = self.lines[i]
             filename, _, _ = extract_data_from_line(line.strip())
-
-            image_path = os.path.join(self.image_folder, f"{filename}.png")
-            image = Image.open(image_path).convert(NNGCConstants.color_mode)
-            image = image.resize(NNGCConstants.compressed_image_size)
-            image = np.array(image) / 255.0
-
-            if NNGCConstants.color_mode == "L":
-                image = np.expand_dims(image, axis=-1)
-
+            image = load_image(self.image_folder, filename)
             batch_images.append(image)
 
         X, y = np.array(batch_images), np.array(batch_images)
@@ -117,15 +112,7 @@ class ImageDataGeneratorEager(keras.utils.Sequence):
         images = []
         for line in self.lines:
             filename, _, _ = extract_data_from_line(line.strip())
-            image_path = os.path.join(self.image_folder, f"{filename}.png")
-
-            # Load and preprocess image
-            image = Image.open(image_path).convert(NNGCConstants.color_mode)
-            image = image.resize(NNGCConstants.compressed_image_size)
-            image = np.array(image) / 255.0
-            if NNGCConstants.color_mode == "L":
-                image = np.expand_dims(image, axis=-1)
-
+            image = load_image(self.image_folder, filename)
             images.append(image)
 
         return np.array(images)
@@ -187,14 +174,8 @@ class LSTMImageDataGeneratorEager(keras.utils.Sequence):
             batch_images = []
 
             for filename in batch_filenames:
-                image_path = os.path.join(self.image_folder, f"{filename}.png")
-                image = Image.open(image_path).convert(NNGCConstants.color_mode)
-                image = image.resize(NNGCConstants.compressed_image_size)
-                image = np.array(image) / 255.0
+                image = load_image(self.image_folder, filename)
                 image = np.expand_dims(image, axis=0)
-                if NNGCConstants.color_mode == "L":
-                    image = np.expand_dims(image, axis=-1)
-
                 batch_images.append(image)
 
             # Encode batch

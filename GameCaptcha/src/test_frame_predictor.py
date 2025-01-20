@@ -11,7 +11,7 @@ from GameCaptcha.src.vae import Sampling
 
 
 
-postfix = "_dino_64"
+postfix = NNGCConstants.postfix
 
 encoder_path = f"{NNGCConstants.model_path}vae_encoder{postfix}.keras"
 decoder_path = f"{NNGCConstants.model_path}vae_decoder{postfix}.keras"
@@ -28,6 +28,6 @@ frames, inputs, _ = load_data(image_folder, input_file, max=1000)
 
 # Generate and plot multiple sequences
 print("Generating multiple sequences...")
-for i in range(3):
+for i in range(10):
     print(f"\nSequence {i+1}:")
     plot_generated_sequence(lstm_model, encoder, decoder, frames, inputs, 5)

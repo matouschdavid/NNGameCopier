@@ -8,7 +8,7 @@ from GameCaptcha.src.io_utils import extract_data_from_line
 
 # Load Frames and Inputs
 def compress_data(image_folder, input_file):
-    output_folder = "compressed_frames"
+    output_folder = NNGCConstants.image_path
     os.makedirs(output_folder, exist_ok=True)
     shutil.copy(input_file, os.path.join(output_folder, os.path.basename(input_file)))
     # Read input file

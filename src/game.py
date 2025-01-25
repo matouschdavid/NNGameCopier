@@ -58,7 +58,8 @@ class Window:
 
     def update_frame(self, frame):
         # Convert numpy array to PhotoImage
-        frame = np.squeeze(frame, axis=-1)
+        if NNGCConstants.color_mode == "L":
+            frame = np.squeeze(frame, axis=-1)
         image = Image.fromarray((frame * 255).astype(np.uint8), mode=NNGCConstants.color_mode)
         photo = ImageTk.PhotoImage(image)
 

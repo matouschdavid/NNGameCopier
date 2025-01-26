@@ -15,15 +15,15 @@ latent_shape = (int(compressed_frame_resolution[1] / downscale_factor), int(comp
 max_time = 2439
 input_prominence = 1
 time_dim = 1
-sequence_length = 120
+sequence_length = 180
 chunk_size = 1000
 target_frame_rate = 15
 
 captured_folder = "captured_frames_dino"
 compressed_folder = "compressed_frames_dino"
-lstm_model_path = "models_dino/lstm.keras"
-encoder_model_path = "models_dino/encoder.keras"
-decoder_model_path = "models_dino/decoder.keras"
+lstm_model_path = "models_dino_180/lstm.keras"
+encoder_model_path = "models_dino_180/encoder.keras"
+decoder_model_path = "models_dino_180/decoder.keras"
 
 #====================================================================== For Snake
 

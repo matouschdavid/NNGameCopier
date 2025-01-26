@@ -3,10 +3,10 @@ from PIL import Image, ImageTk
 import time
 from pynput import keyboard
 
-from GameCaptcha.src.processing.game_capture import one_hot_encode_input
-from GameCaptcha.src.util.game_utils import predict_next_frame, clean_image
+from src.processing.game_capture import one_hot_encode_input
+from src.util.game_utils import predict_next_frame, clean_image
 import numpy as np
-import GameCaptcha.src.config as config
+import src.config as config
 
 
 class Window:

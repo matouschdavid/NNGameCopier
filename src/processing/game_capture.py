@@ -6,7 +6,7 @@ from PIL import ImageGrab
 from threading import Thread
 from screeninfo import get_monitors
 from pynput.mouse import Controller
-import GameCaptcha.src.config as config
+import src.config as config
 
 frame_count = 0 # todo change to continue previous capture
 

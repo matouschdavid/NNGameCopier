@@ -1,4 +1,4 @@
-import GameCaptcha.src.config as config
+import config as config
 from keras import layers, Model
 import tensorflow as tf
 import numpy as np

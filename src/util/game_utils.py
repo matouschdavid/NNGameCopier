@@ -1,5 +1,5 @@
 import numpy as np
-import GameCaptcha.src.config as config
+import src.config as config
 
 def predict_next_frame(decoder, lstm, latent_space_buffer, input_sequence, time_sequence, new_input):
     # Predict the next latent space

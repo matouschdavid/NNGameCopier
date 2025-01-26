@@ -1,6 +1,6 @@
 import os
 from PIL import Image
-import GameCaptcha.src.config as config
+import config as config
 import numpy as np
 import re
 

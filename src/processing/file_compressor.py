@@ -2,8 +2,8 @@ import os
 import shutil
 from PIL import Image
 
-import GameCaptcha.src.config as config
-from GameCaptcha.src.util.io_utils import extract_data_from_line
+import src.config as config
+from src.util.io_utils import extract_data_from_line
 
 
 # Load Frames and Inputs

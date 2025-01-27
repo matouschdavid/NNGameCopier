@@ -1,6 +1,6 @@
 import os
 from PIL import Image
-import config as config
+import src.config as config
 import numpy as np
 import re
 
